@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eatter</title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+    <header id="main_head">
+        <h1>Eatter</h1>
+    </header>
+    <div class="content">
+        <div class="left">
+            <div class="posting panel">
+                <form action="/post" method="post">
+                    <label for="email">Napisz posta:</label><br>
+                    <input type="text" id="posing_bar" name="content"><br>
+                    <input type="submit" value="Zamieść">
+                </form>
+            </div>
+            {% include "feed.html" %}
+        </div>
+        <div class="right">
+            {% include "search.html" %}
+            {% if !logged %}
+                {% include "login.html" %}
+            {% endif %}
+        </div>
+    </div>
+    <!-- <button onclick="document.location='/login'">Login</button>  -->
+</body>
+</html>

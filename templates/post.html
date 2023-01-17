@@ -1,0 +1,7 @@
+<article class="post panel">
+    <h1>{{post.author}}</h1>
+    {{post.content}}
+    {% for comment in post.comments %}
+        {% include "comment.html" %}
+    {% endfor %}
+</article>
