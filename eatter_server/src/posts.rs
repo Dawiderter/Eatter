@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use askama::Template;
 use axum::{
     extract::{State, Path},
     http::StatusCode,
@@ -72,28 +71,5 @@ pub async fn input_comment(
             Redirect::to("/")
         }
         None => Redirect::to("/"),
-    }
-}
-
-#[derive(Template)]
-#[template(path = "base_post.html")]
-pub struct PostBaseTemplate {
-    post: Post,
-    logged: bool,
-}
-
-pub async fn view_post(
-    cookies: Cookies,
-    State(key): State<Key>,
-    State(database): State<Database>,
-    Path(id): Path<usize>,
-) -> Result<impl IntoResponse, impl IntoResponse> {
-    let cookie = cookies.signed(&key).get("login");
-    match cookie {
-        Some(cookie) => {
-            let post = database.get_post(id).await.ok_or(Redirect::to("/"))?;
-            Ok(PostBaseTemplate {post, logged : true})
-        }
-        None => Err(Redirect::to("/")),
     }
 }

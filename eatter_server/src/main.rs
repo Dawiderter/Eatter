@@ -5,7 +5,7 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
-use eatter_server::{base, db::Database, login, posts, search, state::GlobalState};
+use eatter_server::{db::Database, login, posts, search, state::GlobalState};
 use tokio::sync::Mutex;
 use tower_cookies::{CookieManagerLayer, Key};
 use tower_http::services::ServeDir;
@@ -24,10 +24,8 @@ async fn main() {
     };
 
     let app = Router::new()
-        .route("/", get(base::base))
         .route("/search", get(search::search))
         .route("/post", post(posts::input_post))
-        .route("/post/:id", get(posts::view_post))
         .route("/login", post(login::login))
         .nest_service(
             "/assets",
