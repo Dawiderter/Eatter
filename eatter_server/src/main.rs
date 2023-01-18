@@ -5,14 +5,25 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
+use clap::{Parser, Arg};
 use eatter_server::{db::Database, login, posts, search, state::GlobalState};
+use mysql_async::{Pool, OptsBuilder};
 use tokio::sync::Mutex;
 use tower_cookies::{CookieManagerLayer, Key};
 use tower_http::services::ServeDir;
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
+#[derive(Parser)]
+struct Args {
+    #[arg(short,long)]
+    pass: String,
+}
+
+
 #[tokio::main]
 async fn main() {
+    let db_pass = Args::parse().pass;
+
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -23,13 +34,15 @@ async fn main() {
         database: Database::new().await,
     };
 
+    let pool = Pool::new(OptsBuilder::default().ip_or_hostname("localhost").user(Some("root")).pass(Some(db_pass)));
+    let mut conn = pool.get_conn().await.unwrap();
+
     let app = Router::new()
         .route("/search", get(search::search))
         .route("/post", post(posts::input_post))
         .route("/login", post(login::login))
-        .nest_service(
-            "/assets",
-            get_service(ServeDir::new("assets")).handle_error(|err| async {
+        .fallback_service(
+            get_service(ServeDir::new("./eatter_frontend/dist")).handle_error(|err| async {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
             }),
         )

@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.61"
 axum = {version = "0.6.2", features = ["macros"]}
+clap = {version = "4.1.1", features = ["derive"]}
+mysql_async = "0.31.2"
 serde = {version = "1.0.152", features = ["derive"]}
 tokio = {version = "1.24.1", features = ["full"]}
 tower = {version = "0.4.13", features = ["util"]}
