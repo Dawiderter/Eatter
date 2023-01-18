@@ -5,7 +5,7 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
-use eatter::{base, db::Database, login, posts, search, state::GlobalState};
+use eatter_server::{base, db::Database, login, posts, search, state::GlobalState};
 use tokio::sync::Mutex;
 use tower_cookies::{CookieManagerLayer, Key};
 use tower_http::services::ServeDir;
