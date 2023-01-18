@@ -15,8 +15,10 @@ pub struct LoginForm{
 }
 
 
-pub async fn login(cookies: Cookies, State(state) : State<Arc<Mutex<GlobalState>>>, Form(form) : Form<LoginForm>) -> impl IntoResponse {
-    cookies.signed(&state.lock().await.master_key).add(Cookie::new("login", form.email));
+pub async fn login(cookies: Cookies, State(key) : State<Key>, Form(form) : Form<LoginForm>) -> impl IntoResponse {
+    cookies.signed(&key).add(Cookie::new("login", form.email));
 
     Redirect::to("/")
 }
+
+ 

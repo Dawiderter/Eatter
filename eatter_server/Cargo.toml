@@ -8,7 +8,8 @@ edition = "2021"
 [dependencies]
 askama = {version = "0.11.1", features = ["with-axum"]}
 askama_axum = "0.2.1"
-axum = "0.6.2"
+async-trait = "0.1.61"
+axum = {version = "0.6.2", features = ["macros"]}
 serde = {version = "1.0.152", features = ["derive"]}
 tokio = {version = "1.24.1", features = ["full"]}
 tower = {version = "0.4.13", features = ["util"]}
