@@ -1,8 +1,0 @@
-<article class="post panel">
-    <h1>{{post.author}}</h1>
-    <a href="/post/{{post.post_id}}">Klik</a><br>
-    {{post.content}}
-    {% for comment in post.comments %}
-        {% include "comment.html" %}
-    {% endfor %}
-</article>
