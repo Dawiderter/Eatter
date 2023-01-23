@@ -99,7 +99,7 @@ CREATE TABLE followers (
 
 
 
-
+DROP PROCEDURE createSession;
 DELIMITER //
 CREATE PROCEDURE createSession(IN user_id int)
 BEGIN
@@ -110,14 +110,14 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE removeSessionFromId;
 DELIMITER //
 CREATE PROCEDURE removeSessionFromId(IN user_id int)
 BEGIN
     DELETE FROM sessions WHERE sessions.user_id = user_id;
 END//
 DELIMITER ;
-
+DROP PROCEDURE removeSession;
 DELIMITER //
 CREATE PROCEDURE removeSession(IN session varchar(256))
 BEGIN
@@ -125,15 +125,15 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getUserFromSession;
 DELIMITER //
-CREATE PROCEDURE getUserFromSession(IN session varchar(256), OUT user_out int)
+CREATE PROCEDURE getUserFromSession(IN session varchar(256))
 BEGIN
     SELECT sessions.user_id FROM sessions WHERE sessions.session = session;
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE addUser;
 DELIMITER //
 CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
 BEGIN
@@ -153,7 +153,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE loginUser;
 DELIMITER //
 CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256))
 BEGIN
@@ -165,7 +165,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getUserIDByEmail;
 DELIMITER //
 CREATE PROCEDURE getUserIDByEmail(IN email varchar(30))
     SELECT users.id INTO user_id FROM users WHERE users.email = email;
@@ -173,7 +173,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getLocalsForCompany;
 DELIMITER //
 CREATE PROCEDURE getLocalsForCompany(IN user_id int)
 BEGIN
@@ -183,7 +183,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE addLocal;
 DELIMITER //
 CREATE PROCEDURE addLocal(IN user_id int, IN name varchar(30), IN phone_num varchar(12), IN contact_email varchar(30), IN address varchar(60))
 BEGIN
@@ -194,7 +194,7 @@ BEGIN
 END //
 DELIMITER ;
 
-
+DROP PROCEDURE addMeal;
 DELIMITER //
 CREATE PROCEDURE addMeal(IN price INT, IN name varchar(30), local_id INT)
 BEGIN
@@ -203,7 +203,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE addCompany;
 DELIMITER //
 CREATE PROCEDURE addCompany(IN email varchar(30), IN nick varchar(15), IN pass varchar(256), IN company_name varchar(30))
 BEGIN

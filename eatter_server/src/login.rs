@@ -5,7 +5,7 @@ use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect};
 use axum::{extract::State, Form};
-use mysql_async::Pool;
+use mysql_async::{Pool, Conn};
 use mysql_async::prelude::*;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
@@ -18,6 +18,22 @@ pub struct LoginBody{
     email: String,
     pass: String
 }
+
+pub async fn auth_helper(conn: &mut Conn, token: String) -> Result<u32, StatusCode> {
+    let res: Option<Option<u32>> = conn.exec_first(
+        r"CALL getUserFromSession(:token)",
+                params! {
+                    "token" => token,
+                }
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if let Some(Some(id)) = res {
+        Ok(id)
+    }
+    else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
+} 
 
 pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBody>) -> Result<impl IntoResponse, StatusCode> {
     info!("Login: {:?}", body);
@@ -46,24 +62,14 @@ pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBod
 pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> Result<StatusCode, StatusCode> {
 
     info!("Auth: {:?}", tok);
-
+    
     let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    
+    let id = auth_helper(&mut conn, tok).await?;
+    
+    info!("Retrieved id: {:?}", id);
 
-    let res: Option<Option<u32>> =conn.exec_first(
-        r"CALL getUserFromSession(:token)",
-                params! {
-                    "token" => tok,
-                }
-    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    // conn.query_first("SELECT @id").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if let Some(Some(id)) = res {
-        Ok(StatusCode::OK)
-    }
-    else {
-        Err(StatusCode::UNAUTHORIZED)
-    }
+    Ok(StatusCode::OK)
 
 }
 
