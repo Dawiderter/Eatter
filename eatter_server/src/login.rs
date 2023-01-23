@@ -49,12 +49,37 @@ pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> 
 
     let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    conn.exec_drop(
+        r"CALL getUserFromSession(:token, @id)",
+                params! {
+                    "token" => tok,
+                }
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if tok == "hej" {
+    let res: Option<Option<String>> = conn.query_first("SELECT @id").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if let Some(Some(id)) = res {
         Ok(StatusCode::OK)
     }
     else {
         Err(StatusCode::UNAUTHORIZED)
     }
+
+}
+
+pub async fn drop_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> Result<StatusCode, StatusCode> {
+
+    info!("Drop session: {:?}", tok);
+
+    let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    conn.exec_drop(
+        r"CALL removeSession(:token)",
+                params! {
+                    "token" => tok,
+                }
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::OK)
 }
  

@@ -2,9 +2,31 @@ import type { RequestEvent } from "@sveltejs/kit";
 
 export const get_session = async (event : RequestEvent) => {
     let token = event.cookies.get("token");
-    let auth = await event.fetch("http://0.0.0.0:3000/auth/" + token);
+    if (token) {
+        let auth = await event.fetch("http://0.0.0.0:3000/auth/" + token);
+        return auth.ok;
+    }
+    else {
+        return false
+    }
 
-    return auth.ok;
+}
+
+export const drop_session = async (event : RequestEvent) => {
+    let token = event.cookies.get("token");
+    if (token) {
+        let auth = await event.fetch("http://0.0.0.0:3000/logout/" + token, {
+            method : "POST"
+        });
+        event.cookies.delete("token");
+        return auth.ok;
+    }
+    else {
+        return false
+    }
+
+
+    
 }
 
 export const create_session = async (event : RequestEvent, email: string, pass: string) => {
