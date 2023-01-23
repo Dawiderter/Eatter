@@ -19,23 +19,23 @@ pub struct LoginBody{
     pass: String
 }
 
-pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBody>) -> impl IntoResponse {
+pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBody>) -> Result<impl IntoResponse, StatusCode> {
     info!("Login: {:?}", body);
 
-    let mut conn = pool.get_conn().await.unwrap();
+    let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    ////
-
-    conn.exec_drop(
+    conn.exec_iter(
         r"INSERT INTO sessions (session, user_id) 
                 VALUES (:session, :user_id)",
                 params! {
                     "session" => "test",
                     "user_id" => 1,
                 }
-    ).await.ok();
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    (StatusCode::OK, Json(json!({ "token" : body.email})))
+
+
+    Ok((StatusCode::OK, Json(json!({ "token" : body.email}))))
 }
 
 pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> impl IntoResponse {
