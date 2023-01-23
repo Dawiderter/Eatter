@@ -24,29 +24,62 @@ pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBod
 
     let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    conn.exec_iter(
-        r"INSERT INTO sessions (session, user_id) 
-                VALUES (:session, :user_id)",
+    conn.exec_drop(
+        r"CALL loginUser(:email, :pass, @token)",
                 params! {
-                    "session" => "test",
-                    "user_id" => 1,
+                    "email" => body.email,
+                    "pass" => body.pass,
                 }
     ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    let res: Option<Option<String>> = conn.query_first("SELECT @token").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    if let Some(Some(token)) = res {
+        Ok((StatusCode::OK, Json(json!({ "token" : token}))))
+    }
+    else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
 
-    Ok((StatusCode::OK, Json(json!({ "token" : body.email}))))
 }
 
-pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> impl IntoResponse {
+pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> Result<StatusCode, StatusCode> {
 
     info!("Auth: {:?}", tok);
 
-    if tok == "hej" {
-        StatusCode::OK
+    let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    conn.exec_drop(
+        r"CALL getUserFromSession(:token, @id)",
+                params! {
+                    "token" => tok,
+                }
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let res: Option<Option<String>> = conn.query_first("SELECT @id").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if let Some(Some(id)) = res {
+        Ok(StatusCode::OK)
     }
     else {
-        StatusCode::UNAUTHORIZED
+        Err(StatusCode::UNAUTHORIZED)
     }
+
+}
+
+pub async fn drop_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> Result<StatusCode, StatusCode> {
+
+    info!("Drop session: {:?}", tok);
+
+    let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    conn.exec_drop(
+        r"CALL removeSession(:token)",
+                params! {
+                    "token" => tok,
+                }
+    ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::OK)
 }
  

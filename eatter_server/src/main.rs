@@ -1,6 +1,6 @@
 use axum::{
     extract::FromRef,
-    routing::{get, post},
+    routing::{get, post, delete},
     Router,
 };
 use clap::Parser;
@@ -36,7 +36,7 @@ async fn main() {
     let pool = Pool::new(
         OptsBuilder::default()
             .ip_or_hostname("localhost")
-            .user(Some("root"))
+            .user(Some("server"))
             .pass(Some(db_pass))
             .db_name(Some("eatter")),
     );
@@ -52,6 +52,7 @@ async fn main() {
     let app = Router::new()
         .route("/search", get(search::search))
         .route("/login", post(login::create_session))
+        .route("/logout/:tok", post(login::drop_session))
         .route("/auth/:tok", get(login::get_session))
         .layer(
             CorsLayer::new()

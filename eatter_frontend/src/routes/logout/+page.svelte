@@ -3,8 +3,8 @@
     import Button from "$lib/ui_components/Button.svelte";
 </script>
 
-<form method="POST">
-    <Button on:click={() => {invalidateAll()}}>
+<form method="POST" action="/logout">
+    <Button>
         Wyloguj
     </Button>
 </form>

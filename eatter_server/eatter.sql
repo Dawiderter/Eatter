@@ -1,6 +1,8 @@
 CREATE DATABASE eatter;
 USE eatter;
 CREATE USER 'server'@'localhost' IDENTIFIED BY 'server';
+SET PASSWORD FOR 'server'@'localhost' = PASSWORD('<enter_pass>');
+GRANT EXECUTE ON eatter.* TO 'server'@'localhost';
 
 CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
@@ -110,9 +112,16 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE PROCEDURE removeSession(IN user_id int)
+CREATE PROCEDURE removeSessionFromId(IN user_id int)
 BEGIN
     DELETE FROM sessions WHERE sessions.user_id = user_id;
+END//
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE removeSession(IN session varchar(256))
+BEGIN
+    DELETE FROM sessions WHERE sessions.session = session;
 END//
 DELIMITER ;
 
@@ -146,13 +155,15 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256))
+CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256), OUT session_token varchar(256))
 BEGIN
     DECLARE user_id INT;
+	DECLARE token varchar(256) DEFAULT NULL;
     SET user_id = verifyUser(email, pass);
     IF (user_id > -1) THEN
-        CALL createSession(user_id, @session_token);
+        CALL createSession(user_id, token);
     END IF;
+	SET session_token = token;
 END//
 DELIMITER ;
 
