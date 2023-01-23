@@ -24,15 +24,15 @@ pub async fn create_session(State(pool): State<Pool>, Json(body) : Json<LoginBod
 
     let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    conn.exec_drop(
-        r"CALL loginUser(:email, :pass, @token)",
+    let res: Option<Option<String>> = conn.exec_first(
+        r"CALL loginUser(:email, :pass)",
                 params! {
                     "email" => body.email,
                     "pass" => body.pass,
                 }
     ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let res: Option<Option<String>> = conn.query_first("SELECT @token").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    //let res: Option<Option<String>> = conn.query_first("SELECT @token").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     if let Some(Some(token)) = res {
         Ok((StatusCode::OK, Json(json!({ "token" : token}))))
@@ -49,14 +49,14 @@ pub async fn get_session(State(pool): State<Pool>, Path(tok) : Path<String>) -> 
 
     let mut conn = pool.get_conn().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    conn.exec_drop(
-        r"CALL getUserFromSession(:token, @id)",
+    let res: Option<Option<u32>> =conn.exec_first(
+        r"CALL getUserFromSession(:token)",
                 params! {
                     "token" => tok,
                 }
     ).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let res: Option<Option<String>> = conn.query_first("SELECT @id").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    // conn.query_first("SELECT @id").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     if let Some(Some(id)) = res {
         Ok(StatusCode::OK)
