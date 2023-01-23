@@ -213,3 +213,38 @@ BEGIN
     INSERT INTO companies(name, user_id) VALUES (name, user_id);
 END//
 DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE getMealsFromLocal(IN local_id INT)
+BEGIN
+    SELECT * FROM meals WHERE meals.local_id = local_id;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE getLocals()
+BEGIN
+    SELECT * FROM locals;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addReview(IN body varchar(300), IN score INT, IN meal_id INT, IN author_id INT)
+BEGIN
+    DECLARE currdate datetime;
+    SET currdate = NOW();
+    INSERT INTO reviews(body, created_at, score, meal_id, author_id) VALUES
+        (body, currdate, score, meal_id, author_id);
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE getReviewsForMeal(IN meal_id INT)
+BEGIN
+    SELECT * FROM reviews WHERE reviews.meal_id = meal_id;
+END//
+DELIMITER ;
