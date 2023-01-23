@@ -4,7 +4,14 @@ import type { Actions } from "./$types";
 
 export const actions = {
   default: async (event) => {
-    console.log("em");
-    create_session(event, "em", "pa");
+    const data = await event.request.formData();
+
+    const email = data.get('email');
+    const pass = data.get('pass');
+
+    
+    if (email != null && pass != null) {
+      await create_session(event, email?.valueOf().toString(), pass?.valueOf().toString());
+    }
   }   
 } satisfies Actions ;

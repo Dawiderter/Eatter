@@ -9,12 +9,15 @@ export const get_session = async (event : RequestEvent) => {
 
 export const create_session = async (event : RequestEvent, email: string, pass: string) => {
 
-    let auth = await event.fetch("http://0.0.0.0:3000/login", {
+    const resp = await event.fetch("http://0.0.0.0:3000/login", {
         headers: new Headers([['Content-Type', 'application/json']]),
         method: "POST",
         body: JSON.stringify({email : email, pass : pass}),
-    }).then((response) => response.json())
-    .then((tok) => event.cookies.set("token", tok.token))
+    });
 
-    console.log(auth);
+    if (resp.status == 200) {
+        const res = await resp.json();
+        event.cookies.set("token", res.token);
+    }
+
 }

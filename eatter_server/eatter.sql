@@ -138,13 +138,15 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256))
+CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256), OUT session_token varchar(256))
 BEGIN
     DECLARE user_id INT;
+	DECLARE token varchar(256) DEFAULT NULL;
     SET user_id = verifyUser(email, pass);
     IF (user_id > -1) THEN
-        CALL createSession(user_id, @session_token);
+        CALL createSession(user_id, token);
     END IF;
+	SET session_token = token;
 END//
 DELIMITER ;
 
