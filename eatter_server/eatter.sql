@@ -214,7 +214,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getMealsFromLocal;
 DELIMITER //
 CREATE PROCEDURE getMealsFromLocal(IN local_id INT)
 BEGIN
@@ -222,7 +222,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getLocals;
 DELIMITER //
 CREATE PROCEDURE getLocals()
 BEGIN
@@ -230,7 +230,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE addReview;
 DELIMITER //
 CREATE PROCEDURE addReview(IN body varchar(300), IN score INT, IN meal_id INT, IN author_id INT)
 BEGIN
@@ -241,7 +241,7 @@ BEGIN
 END//
 DELIMITER ;
 
-
+DROP PROCEDURE getReviewsForMeal;
 DELIMITER //
 CREATE PROCEDURE getReviewsForMeal(IN meal_id INT)
 BEGIN
