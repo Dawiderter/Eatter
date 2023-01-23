@@ -19,8 +19,8 @@ CREATE TABLE sessions (
 
 CREATE TABLE companies ( 
 	id int NOT NULL AUTO_INCREMENT,
-	name varchar(30) NOT NULL,
-	user_id int NOT NULL,
+	name varchar(30) NOT NULL UNIQUE,
+	user_id int NOT NULL UNIQUE,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -99,12 +99,12 @@ CREATE TABLE followers (
 
 
 DELIMITER //
-CREATE PROCEDURE createSession(IN user_id int, OUT session_token varchar(256))
+CREATE PROCEDURE createSession(IN user_id int)
 BEGIN
     IF NOT EXISTS (SELECT * FROM sessions WHERE sessions.user_id = user_id) THEN
         INSERT INTO sessions(session, user_id) VALUES (PASSWORD(user_id), user_id);
     END IF;
-    SELECT sessions.session INTO session_token FROM sessions WHERE sessions.user_id = user_id;
+    SELECT sessions.session FROM sessions WHERE sessions.user_id = user_id;
 END//
 DELIMITER ;
 
@@ -120,15 +120,13 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE getUserFromSession(IN session varchar(256), OUT user_out int)
 BEGIN
-    DECLARE user int DEFAULT NULL;
-    SET user = (SELECT sessions.user_id FROM sessions WHERE sessions.session = session);
-    SET user_out = user;
+    SELECT sessions.user_id FROM sessions WHERE sessions.session = session;
 END//
 DELIMITER ;
 
 
 DELIMITER //
-CREATE PROCEDURE addUser(IN id int, IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
+CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
 BEGIN
     INSERT INTO users(email, nick, pass_hash) VALUES
     (email, nick, PASSWORD(pass));
@@ -160,8 +158,49 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE PROCEDURE getUserIDByEmail(IN email varchar(30), OUT user_id int)
+CREATE PROCEDURE getUserIDByEmail(IN email varchar(30))
     SELECT users.id INTO user_id FROM users WHERE users.email = email;
 BEGIN
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE getLocalsForCompany(IN user_id int)
+BEGIN
+    DECLARE company_id int;
+    SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
+    SELECT id, name, phone_num, contact_email, address FROM locals WHERE locals.company_id = company_id;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addLocal(IN user_id int, IN name varchar(30), IN phone_num varchar(12), IN contact_email varchar(30), IN address varchar(60))
+BEGIN
+    DECLARE company_id int;
+    SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
+    INSERT INTO locals(name, phone_num, contact_email, address, company_id) VALUES
+    (name, phone_num, contact_email, address, company_id);
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addMeal(IN price INT, IN name varchar(30), local_id INT)
+BEGIN
+    INSERT INTO meals(price, name, local_id) VALUES
+        (price, name, local_id);
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addCompany(IN email varchar(30), IN nick varchar(15), IN pass varchar(256), IN company_name varchar(30))
+BEGIN
+    DECLARE user_id int;
+    CALL addUser(email, nick, pass);
+    SET user_id = verifyUser(email, pass);
+    INSERT INTO companies(name, user_id) VALUES (name, user_id);
 END//
 DELIMITER ;
