@@ -118,6 +118,16 @@ DELIMITER ;
 
 
 DELIMITER //
+CREATE PROCEDURE getUserFromSession(IN session varchar(256), OUT user_out int)
+BEGIN
+    DECLARE user int DEFAULT NULL;
+    SET user = (SELECT sessions.user_id FROM sessions WHERE sessions.session = session);
+    SET user_out = user;
+END//
+DELIMITER ;
+
+
+DELIMITER //
 CREATE PROCEDURE addUser(IN id int, IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
 BEGIN
     INSERT INTO users(email, nick, pass_hash) VALUES
