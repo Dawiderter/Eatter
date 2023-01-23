@@ -6,11 +6,10 @@ use axum::{
     response::{IntoResponse, Redirect},
     Form,
 };
+use mysql_async::Pool;
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use tower_cookies::{Cookie, Cookies, Key};
-
-use crate::{db::Database, state::GlobalState};
 
 #[derive(Debug, Clone)]
 pub struct Post {
@@ -31,45 +30,41 @@ pub struct PostInput {
     pub content: String,
 }
 
-pub async fn input_post(
-    cookies: Cookies,
-    State(key): State<Key>,
-    State(database): State<Database>,
-    Form(input): Form<PostInput>,
-) -> impl IntoResponse {
-    let cookie = cookies.signed(&key).get("login");
-    match cookie {
-        Some(cookie) => {
-            let id = database
-                .create_post(cookie.value().to_owned(), input.content)
-                .await;
-            Redirect::to(&format!("/post/{id}"))
-        }
-        None => Redirect::to("/"),
-    }
-}
+// pub async fn input_post(
+//     State(database): State<Pool>,
+//     Form(input): Form<PostInput>,
+// ) -> impl IntoResponse {
+//     let cookie = cookies.signed(&key).get("login");
+//     match cookie {
+//         Some(cookie) => {
+//             let id = database
+//                 .create_post(cookie.value().to_owned(), input.content)
+//                 .await;
+//             Redirect::to(&format!("/post/{id}"))
+//         }
+//         None => Redirect::to("/"),
+//     }
+// }
 
 
-#[derive(Debug, Deserialize)]
-pub struct CommentInput {
-    pub content: String,
-}
+// #[derive(Debug, Deserialize)]
+// pub struct CommentInput {
+//     pub content: String,
+// }
 
-pub async fn input_comment(
-    cookies: Cookies,
-    State(key): State<Key>,
-    State(database): State<Database>,
-    Path(post_id): Path<usize>,
-    Form(input): Form<CommentInput>,
-) -> impl IntoResponse {
-    let cookie = cookies.signed(&key).get("login");
-    match cookie {
-        Some(cookie) => {
-            let id = database
-                .create_comment(post_id, cookie.value().into(), input.content)
-                .await;
-            Redirect::to("/")
-        }
-        None => Redirect::to("/"),
-    }
-}
+// pub async fn input_comment(
+//     State(database): State<Pool>,
+//     Path(post_id): Path<usize>,
+//     Form(input): Form<CommentInput>,
+// ) -> impl IntoResponse {
+//     let cookie = cookies.signed(&key).get("login");
+//     match cookie {
+//         Some(cookie) => {
+//             let id = database
+//                 .create_comment(post_id, cookie.value().into(), input.content)
+//                 .await;
+//             Redirect::to("/")
+//         }
+//         None => Redirect::to("/"),
+//     }
+// }

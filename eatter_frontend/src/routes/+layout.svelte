@@ -1,53 +1,120 @@
-<script>
-	import Header from './Header.svelte';
-	import './styles.css';
+<script lang="ts">
+    import './styles.css'
+    import Button from '$lib/ui_components/Button.svelte'
+	import type { PageData } from './$types';
+	import { redirect } from '@sveltejs/kit';
+
+    /** @type {import('./$types').PageData} */
+    export let data: PageData;
+
+    $: is_logged = data.is_logged;
 </script>
 
-<div class="app">
-	<Header />
-
-	<main>
-		<slot />
-	</main>
-
-	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer>
+<div class="big_container">
+    <header>
+        <h1> 
+            Eatter
+        </h1>
+    </header>
+    
+    <div class="little_container">
+        <div class="left_container">
+            {#if is_logged}
+                <a href="/logout">
+                    <Button on:click={() => {}}>
+                        Wyloguj
+                    </Button>
+                </a>
+            {:else}
+                <a href="/login">
+                    <Button>
+                        Zaloguj
+                    </Button>
+                </a>
+            {/if}
+            
+            <nav>
+                <ul>
+                    <li>
+                        <a href="/">Globalny Feed</a>
+                    </li>
+                    {#if is_logged}
+                        <li>
+                            <a href="/">Twój Feed</a>
+                        </li>
+                    {/if}
+                    <li>
+                        <a href="/">Profil</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <main>
+            <slot></slot>
+        </main>
+    </div>
 </div>
 
+
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
+    header {
+        text-align: center;
+        padding: 10px 0px;
+        margin: 10px;
+        background-color: var(--color-bg-0);
+        border-radius: var(--corner-radius);
+    }
 
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
+    main {
+        margin: 10px;
+        width: 80%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
+    .big_container {
+        display: flex;
+        flex-direction: column;
+    }
 
-	footer a {
-		font-weight: bold;
-	}
+    .little_container {
+        display: flex;
+        flex-direction: row;
+    }
 
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	}
+    .left_container {
+        padding: 10px;
+        max-width: 200px;
+        width: 20%;
+        min-width: 100px;
+    }
+
+    ul {
+        padding: 0px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        list-style: none;
+        background-color: var(--color-bg-0);
+        border-radius: var(--corner-radius);
+    }
+    
+    li {
+        margin: 10px 0px;
+        padding: 10px;
+        text-align: center;
+        background-color: var(--color-bg-2);
+        border-radius: var(--corner-radius);
+        font-weight: bold;
+    }
+
+    a, a:hover, a:visited, a:active {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    li:hover {
+        background-color: var(--color-fg-1);
+    }
 </style>

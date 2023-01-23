@@ -1,0 +1,1 @@
+import{S as r,i,s as o,e as c,c as m,n,g as l}from"./index-7805385c.js";function d(a){let e;return{c(){e=c("main"),e.innerHTML="<header><h1>Eatter</h1></header>"},m(t,s){m(t,e,s)},p:n,i:n,o:n,d(t){t&&l(e)}}}class p extends r{constructor(e){super(),i(this,e,null,d,o,{})}}new p({target:document.getElementById("app")});
