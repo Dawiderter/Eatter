@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use clap::Parser;
-use eatter_server::{login, posts, search, feed};
+use eatter_server::{login, grab, search, posts};
 use mysql_async::{OptsBuilder, Pool};
 
 use tower_http::cors::{Any, CorsLayer};
@@ -54,6 +54,9 @@ async fn main() {
         .route("/login", post(login::create_session))
         .route("/logout/:tok", post(login::drop_session))
         .route("/auth/:tok", get(login::get_session))
+        .route("/grab/local/:id/meals", get(grab::get_meals_from_local))
+        .route("/grab/meal/:id/reviews", get(grab::get_reviews_from_meal))
+        .route("/post/review/:tok", post(posts::add_review))
         .layer(
             CorsLayer::new()
                 .allow_methods(Any)

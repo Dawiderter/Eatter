@@ -1,70 +1,49 @@
-use std::sync::Arc;
-
 use axum::{
-    extract::{State, Path},
+    extract::{Path, State},
     http::StatusCode,
-    response::{IntoResponse, Redirect},
-    Form,
+    response::IntoResponse,
+    Json,
 };
-use mysql_async::Pool;
-use serde::Deserialize;
-use tokio::sync::Mutex;
-use tower_cookies::{Cookie, Cookies, Key};
+use mysql_async::{prelude::*, Pool};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use tracing::info;
 
-#[derive(Debug, Clone)]
-pub struct Post {
-    pub post_id: usize,
-    pub author: String,
-    pub content: String,
-    pub comments: Vec<Comment>,
+use crate::login::auth_helper;
+
+#[derive(Deserialize, Debug)]
+pub struct Review {
+    body: String,
+    score: u32,
+    meal_id: u32,
 }
 
-#[derive(Debug, Clone)]
-pub struct Comment {
-    pub author: String,
-    pub content: String,
+pub async fn add_review(
+    State(pool): State<Pool>,
+    Path(token): Path<String>,
+    Json(body): Json<Review>,
+) -> Result<impl IntoResponse, StatusCode> {
+    info!("Review to add: {:?}", body);
+
+    let mut conn = pool
+        .get_conn()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let user = auth_helper(&mut conn, token)
+        .await?;
+
+    conn.exec_drop(
+        r"CALL addReview(:body, :score, :meal_id, :author_id)",
+        params! {
+            "body" => body.body,
+            "score" => body.score,
+            "meal_id" => body.meal_id,
+            "author_id" => user,
+        },
+    )
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::OK)
 }
-
-#[derive(Debug, Deserialize)]
-pub struct PostInput {
-    pub content: String,
-}
-
-// pub async fn input_post(
-//     State(database): State<Pool>,
-//     Form(input): Form<PostInput>,
-// ) -> impl IntoResponse {
-//     let cookie = cookies.signed(&key).get("login");
-//     match cookie {
-//         Some(cookie) => {
-//             let id = database
-//                 .create_post(cookie.value().to_owned(), input.content)
-//                 .await;
-//             Redirect::to(&format!("/post/{id}"))
-//         }
-//         None => Redirect::to("/"),
-//     }
-// }
-
-
-// #[derive(Debug, Deserialize)]
-// pub struct CommentInput {
-//     pub content: String,
-// }
-
-// pub async fn input_comment(
-//     State(database): State<Pool>,
-//     Path(post_id): Path<usize>,
-//     Form(input): Form<CommentInput>,
-// ) -> impl IntoResponse {
-//     let cookie = cookies.signed(&key).get("login");
-//     match cookie {
-//         Some(cookie) => {
-//             let id = database
-//                 .create_comment(post_id, cookie.value().into(), input.content)
-//                 .await;
-//             Redirect::to("/")
-//         }
-//         None => Redirect::to("/"),
-//     }
-// }
