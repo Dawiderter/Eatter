@@ -1,9 +1,8 @@
-<script>
+<script lang="ts">
 	import Button from "$lib/ui_components/Button.svelte";
 	import Post from "$lib/ui_components/Post.svelte";
 
-    const bod = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer aliquet dignissim metus, eget sollicitudin nunc cursus et. Suspendisse potenti. Donec ac interdum elit. Ut ac faucibus nisl. Nam ex dolor, porttitor sit amet commodo finibus, commodo tempor arcu. Donec euismod, leo id consequat libero. "
-    const posts = [1,2,3,4,5,6,7,8,9];
+    export let data : import("./$types").PageData;
 </script>
 
 
@@ -11,15 +10,14 @@
     <div class = "overflow-y-auto h-screen">
         {#each posts as p}
             <Post
-            author = "author1"
-            body = {bod}
-            score = {5}
-            meal = "spaghetti bolognese"
-            comments_num = {0}>
+            author = {p.review.author_id}
+            body = {p.review.body}
+            score = {p.review.score}
+            meal = {p.meal.name}
+            comments_num = {p.comm_count}>
             </Post>
         {/each}
     </div>
 </section>
 
 <style>
-</style>

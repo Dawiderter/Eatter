@@ -1,24 +1,15 @@
 import type { RequestEvent } from "@sveltejs/kit";
 
-export const fetch_post = async (event : RequestEvent, id: number) => {
+export const fetch_global_feed = async (event : RequestEvent) => {
 
-    const resp = await event.fetch("http://0.0.0.0:3000/post"+id, {
-        headers: new Headers([['Content-Type', 'application/json']]),
-        method: "POST",
-        body: JSON.stringify({id: id}),
-    });
+    const resp = await event.fetch("http://0.0.0.0:3000/grab/feed/global");
 
     if (resp.status == 200) {
         const res = await resp.json();
-        event.cookies.set("token", res.token);
+        return res;
+    }
+    else {
+        return null;
     }
 
-}
-
-export const fetch_comments = async (event: RequestEvent) => {
-
-}
-
-export const fetch_all_posts = async (event: RequestEvent) => {
-    
 }
