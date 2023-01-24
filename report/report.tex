@@ -334,3 +334,19 @@ jest system obsługiwania loginów i sesji.
 Trzymanie timerów usuwających martwe sesje znajduje się już po stronie
 serwera.
 \end{document}
+
+\section*{Optymalizacje}
+\subsection*{Redundantne dane}
+Użytkownik ma możliwość zobaczenia agregowanych danych 
+na temat posiłków i lokali. W celu usprawnienia bazy danych,
+zdenormalizowaliśmy bazę danych, dodając tabele z 
+redundantnymi agregowanymi atrybutami, m. in. liczba recenzji
+i średnia z ocen. Spójność jest kontrolowana przez odpowiednie triggery.
+
+\section*{Technologie}
+Aplikacja została stworzona przy pomocy standardowych technologii webowych.
+Jako frontend korzystamy z frameworka \emph{Sveltekit}, który odpowiada za 
+renderowanie serwerowe. Backend został zaimplementowany w języku
+\emph{Rust} przy pomocy biblioteki \emph{Axum}, co pozwala na bezpieczeństwo
+i wydajność. Baza danych to \emph{MariaDB}.
+
