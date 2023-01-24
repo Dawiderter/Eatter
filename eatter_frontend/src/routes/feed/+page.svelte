@@ -8,7 +8,7 @@
 
 <section>
     <div class = "overflow-y-auto h-screen">
-        {#each posts as p}
+        {#each data.items as p}
             <Post
             author = {p.review.author_id}
             body = {p.review.body}
@@ -19,5 +19,3 @@
         {/each}
     </div>
 </section>
-
-<style>
