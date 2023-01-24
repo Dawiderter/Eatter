@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
     --font-body: Arial, Helvetica, sans-serif;
 	--color-bg-0: rgb(242, 231, 204);

@@ -214,7 +214,7 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE getMealsFromLocal;
+
 DELIMITER //
 CREATE PROCEDURE getMealsFromLocal(IN local_id INT)
 BEGIN
@@ -222,7 +222,7 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE getLocals;
+
 DELIMITER //
 CREATE PROCEDURE getLocals()
 BEGIN
@@ -230,7 +230,7 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE addReview;
+
 DELIMITER //
 CREATE PROCEDURE addReview(IN body varchar(300), IN score INT, IN meal_id INT, IN author_id INT)
 BEGIN
@@ -241,7 +241,7 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE getReviewsForMeal;
+
 DELIMITER //
 CREATE PROCEDURE getReviewsForMeal(IN meal_id INT)
 BEGIN
@@ -253,7 +253,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE getGlobalFeed()
 BEGIN
-	SELECT COUNT(comments.id), reviews.*, meals.name, meals.price, locals.name FROM reviews, locals, meals, comments WHERE reviews.meal_id = meals.id AND meals.local_id = locals.id AND comments.review_id = reviews.id;
+	SELECT COUNT(comments.id), reviews.*, meals.*, locals.name FROM reviews, locals, meals, comments WHERE reviews.meal_id = meals.id AND meals.local_id = locals.id AND comments.review_id = reviews.id;
 END//
 DELIMITER ;
 
@@ -268,10 +268,9 @@ BEGIN
 END//
 
 
-DELIMITER ;
+DELIMITER //
 CREATE PROCEDURE getPost(IN review_id INT)
 BEGIN
     SELECT * FROM reviews WHERE reviews.id = review_id;
 END//
-DELIMITER //
 DELIMITER ;

@@ -1,58 +1,35 @@
 <script lang="ts">
-    import './styles.css'
+    import '../app.css'
     import Button from '$lib/ui_components/Button.svelte'
 	import type { PageData } from './$types';
 	import { redirect } from '@sveltejs/kit';
+	import Navbar from '$lib/ui_components/sidebar/Navbar.svelte';
+    import Sidebar from '$lib/ui_components/sidebar/Sidebar.svelte';
 
     /** @type {import('./$types').PageData} */
     export let data: PageData;
 
+    let open = false;
+
     $: is_logged = data.is_logged;
 </script>
 
-<div class="big_container">
-    <header>
-        <h1> 
-            Eatter
-        </h1>
-    </header>
-    
-    <div class="little_container">
-        <div class="left_container">
-            {#if is_logged}
-                <a href="/logout">
-                    <Button on:click={() => {}}>
-                        Wyloguj
-                    </Button>
-                </a>
-            {:else}
-                <a href="/login">
-                    <Button>
-                        Zaloguj
-                    </Button>
-                </a>
-            {/if}
+<svelte:head>
+	<link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet"/>
+</svelte:head>
+
+<Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
+<Navbar bind:sidebar={open}/>
+
+<div class="little_container">
+    <div class="left_container">
+        <nav>
             
-            <nav>
-                <ul>
-                    <li>
-                        <a href="/feed">Globalny Feed</a>
-                    </li>
-                    {#if is_logged}
-                        <li>
-                            <a href="/">Twój Feed</a>
-                        </li>
-                    {/if}
-                    <li>
-                        <a href="/">Profil</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-        <main>
-            <slot></slot>
-        </main>
+        </nav>
     </div>
+    <main>
+        <slot></slot>
+    </main>
 </div>
 
 
