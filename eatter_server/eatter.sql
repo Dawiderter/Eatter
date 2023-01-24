@@ -250,10 +250,15 @@ END//
 DELIMITER ;
 
 
+DROP PROCEDURE getGlobalFeed;
 DELIMITER //
 CREATE PROCEDURE getGlobalFeed()
 BEGIN
-	SELECT COUNT(comments.id), reviews.*, meals.*, locals.name FROM reviews, locals, meals, comments WHERE reviews.meal_id = meals.id AND meals.local_id = locals.id AND comments.review_id = reviews.id;
+	SELECT COUNT(c.id) AS comm_num, r.*, m.*, l.name as l_name FROM reviews r 
+	JOIN meals m ON r.meal_id = m.id 
+	JOIN locals l ON m.local_id = l.id 
+	LEFT JOIN comments c ON c.review_id = r.id
+	GROUP BY r.id; 
 END//
 DELIMITER ;
 
