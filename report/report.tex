@@ -78,6 +78,46 @@ dodatkowo dostęp do dodawania i moderowania dań w swoich restauracjach.
 Moderator również jest rozszerzeniem funkcjonalności użytkownika. Może on
 usuwać i modyfikować posty, a także i konta użytkowników.
 
+\section*{Normalizacja}
+
+\subsection*{1 NF}
+Baza danych znajduje się w pierwszej formie normalnej. 
+W każdej tabeli znajduje się klucz główny unikalny służący do rozróżniania krotek.
+Także każdy atrybut to jedna atomowa wartość - liczba, data lub tekst.
+Do zapewnienia tego zostały utworzone odpowiednie tabele relacji wiele do wielu, takie jak 
+\textbf{followers} i \textbf{meals\_tags}.
+
+
+\subsection*{2 NF}
+Dodatkowo spełniona jest druga forma normalna. 
+W każdej tabeli atrybuty niekluczowe zależą jedynie od pełnego klucza.
+Na przykład w tabeli \textbf{locals}. Wszystkie atrybuty są właściwością 
+konkretnego lokalu. Atrybuty, które takie nie były, na przykład informacje
+o firmie zarządzającej obiektem, zostały przeniesione do osobnej tabeli \textbf{companies}
+i powiązane z tą przez klucz obcy.
+
+\begin{tabular}{|c|}
+    \hline
+    \textbf{locals} \\
+    \hline \hline
+    id \\
+    \hline
+    name \\
+    \hline
+    phone\_num \\
+    \hline
+    contact\_email \\
+    \hline
+    address \\
+    \hline
+    company\_id \\
+    \hline
+\end{tabular}
+
+\subsection*{3 NF}
+Trzecia forma normalna także jest spełniona. We wszystkich tabelach,
+wszystkie atrybuty niekluczowe zależą jedynie od klucza głównego.
+
 \section*{Szczegółowe omówienie tabel}
 \subsection*{Users}
 Tabela użytkowników zgodnie z nazwą zawiera wszystkie informacje
