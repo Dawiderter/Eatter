@@ -4,15 +4,17 @@
 	export let open = false
     export let is_logged = false;
 </script>
-
-<aside class="absolute h-screen bg-gray-200 border-r-2 shadow-lg p-8" class:open>
+ 
+<aside class="absolute flex items-center justify-center h-screen bg-gray-200 border-r-2 shadow-lg p-12" class:open>
 	<nav class="p-12 text-xl font-bold">
-        {#if is_logged}
-        <a href="/logout">Wyloguj</a>
-        {:else}
-        <a href="/login">Zaloguj</a>
-        {/if}
-        <ul>
+        <ul class = "space-y-7">
+            <li>
+                {#if is_logged}
+                <a href="/logout">Wyloguj</a>
+                {:else}
+                <a href="/login">Zaloguj</a>
+                {/if}
+            </li>
             <li>
                 <a href="/feed">Globalny Feed</a>
             </li>
