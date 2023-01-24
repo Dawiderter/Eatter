@@ -612,12 +612,15 @@ INPUT /usr/share/texmf-dist/tex/latex/polski/ot4cmtt.fd
 INPUT /usr/share/texmf-dist/tex/latex/polski/ot4cmtt.fd
 INPUT /usr/share/texmf-dist/tex/latex/polski/ot4cmtt.fd
 INPUT /usr/share/texmf-dist/fonts/tfm/public/pl/pltt9.tfm
+INPUT /usr/share/texmf-dist/fonts/tfm/public/pl/plti10.tfm
 INPUT report.aux
 INPUT ./report.out
 INPUT ./report.out
+INPUT /usr/share/texmf-dist/fonts/enc/dvips/pl/plit.enc
 INPUT /usr/share/texmf-dist/fonts/enc/dvips/pl/pltt.enc
 INPUT /usr/share/texmf-dist/fonts/enc/dvips/pl/plrm.enc
 INPUT /usr/share/texmf-dist/fonts/type1/public/pl/plbx10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/pl/plbx12.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/pl/plr10.pfb
+INPUT /usr/share/texmf-dist/fonts/type1/public/pl/plti10.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/pl/pltt9.pfb

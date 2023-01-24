@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Arch Linux) (preloaded format=pdflatex 2022.12.11)  24 JAN 2023 16:28
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Arch Linux) (preloaded format=pdflatex 2022.12.11)  24 JAN 2023 16:44
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -356,14 +356,14 @@ LaTeX Info: Redefining \nameref on input line 35.
 \openout3 = `report.out'.
 
 \c@lstlisting=\count309
-<./diagram.png, id=4, 786.35065pt x 458.586pt>
+<./diagram.png, id=4, 942.52126pt x 569.12625pt>
 File: ./diagram.png Graphic file (type png)
 <use ./diagram.png>
 Package pdftex.def Info: ./diagram.png  used on input line 47.
-(pdftex.def)             Requested size: 345.0pt x 201.19766pt.
+(pdftex.def)             Requested size: 345.0pt x 208.32422pt.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./diagram.png (PNG copy)>]
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./diagram.png>]
 LaTeX Font Info:    Trying to load font information for OML+plm on input line 99.
  (/usr/share/texmf-dist/tex/latex/polski/omlplm.fd
 File: omlplm.fd 2008/02/24 v1.2.1 Font defs for fonts PL (MW)
@@ -391,23 +391,23 @@ Underfull \hbox (badness 10000) in paragraph at lines 300--307
 
  []
 
-[6] [7] (./report.aux)
+[6] [7] [8] (./report.aux)
 Package rerunfilecheck Info: File `report.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 12212 strings out of 478238
- 193773 string characters out of 5850455
- 704735 words of memory out of 5000000
- 30148 multiletter control sequences out of 15000+600000
- 476227 words of font info for 45 fonts, out of 8000000 for 9000
+ 12218 strings out of 478238
+ 193833 string characters out of 5850455
+ 707735 words of memory out of 5000000
+ 30149 multiletter control sequences out of 15000+600000
+ 476763 words of font info for 46 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  60i,7n,63p,277b,1876s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf-dist/fonts/enc/dvips/pl/pltt.enc}{/usr/share/texmf-dist/fonts/enc/dvips/pl/plrm.enc}</usr/share/texmf-dist/fonts/type1/public/pl/plbx10.pfb></usr/share/texmf-dist/fonts/type1/public/pl/plbx12.pfb></usr/share/texmf-dist/fonts/type1/public/pl/plr10.pfb></usr/share/texmf-dist/fonts/type1/public/pl/pltt9.pfb>
-Output written on report.pdf (7 pages, 133683 bytes).
+{/usr/share/texmf-dist/fonts/enc/dvips/pl/plit.enc}{/usr/share/texmf-dist/fonts/enc/dvips/pl/pltt.enc}{/usr/share/texmf-dist/fonts/enc/dvips/pl/plrm.enc}</usr/share/texmf-dist/fonts/type1/public/pl/plbx10.pfb></usr/share/texmf-dist/fonts/type1/public/pl/plbx12.pfb></usr/share/texmf-dist/fonts/type1/public/pl/plr10.pfb></usr/share/texmf-dist/fonts/type1/public/pl/plti10.pfb></usr/share/texmf-dist/fonts/type1/public/pl/pltt9.pfb>
+Output written on report.pdf (8 pages, 108435 bytes).
 PDF statistics:
- 248 PDF objects out of 1000 (max. 8388607)
- 227 compressed objects within 3 object streams
- 160 named destinations out of 1000 (max. 500000)
+ 264 PDF objects out of 1000 (max. 8388607)
+ 239 compressed objects within 3 object streams
+ 164 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
