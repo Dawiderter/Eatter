@@ -20,9 +20,10 @@
 
 <Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
 <Navbar bind:sidebar={open}/>
-
-<div  class = "flex items-center justify-center h-screen w-4/12">
-    <slot></slot>
+<div class="flex flex-col items-center justify-center">
+    <div class = "flex items-center justify-center h-screen w-4/12">
+        <slot></slot>
+    </div>
 </div>
 
 
