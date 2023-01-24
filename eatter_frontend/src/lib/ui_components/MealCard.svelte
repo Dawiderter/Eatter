@@ -2,7 +2,7 @@
     export let name : string;
 </script>
 
-<article>
+<article on:click>
     <h1>{name}</h1>
     <p>Lorem ipsum</p>
 </article>

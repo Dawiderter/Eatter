@@ -36,7 +36,7 @@
             <nav>
                 <ul>
                     <li>
-                        <a href="/">Globalny Feed</a>
+                        <a href="/feed">Globalny Feed</a>
                     </li>
                     {#if is_logged}
                         <li>

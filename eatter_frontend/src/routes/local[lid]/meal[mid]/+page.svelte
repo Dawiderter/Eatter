@@ -3,6 +3,10 @@
 	import MealCard from "$lib/ui_components/MealCard.svelte";
 
     export let data : import("./$types").PageData;
+
+	const onClick = () => {
+		console.log("clicked");
+	}
 </script>
 
-<MealCard name="{data.mid}" />
+<MealCard on:click = {onClick} name="{data.mid}" />

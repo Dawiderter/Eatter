@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use clap::Parser;
-use eatter_server::{login, posts, search};
+use eatter_server::{login, posts, search, feed};
 use mysql_async::{OptsBuilder, Pool};
 
 use tower_http::cors::{Any, CorsLayer};

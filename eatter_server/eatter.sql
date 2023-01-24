@@ -248,3 +248,30 @@ BEGIN
     SELECT * FROM reviews WHERE reviews.meal_id = meal_id;
 END//
 DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE getGlobalFeed()
+BEGIN
+	SELECT COUNT(comments.id), reviews.*, meals.name, meals.price, locals.name FROM reviews, locals, meals, comments WHERE reviews.meal_id = meals.id AND meals.local_id = locals.id AND comments.review_id = reviews.id;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addComment(IN body varchar(150), IN review_id INT, IN author_id INT)
+BEGIN
+    DECLARE currdate datetime;
+    SET currdate = NOW();
+    INSERT INTO comments(body, created_at, review_id, author_id) VALUES
+        (body, currdate, review_id, author_id);
+END//
+
+
+DELIMITER ;
+CREATE PROCEDURE getPost(IN review_id INT)
+BEGIN
+    SELECT * FROM reviews WHERE reviews.id = review_id;
+END//
+DELIMITER //
+DELIMITER ;
