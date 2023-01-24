@@ -149,3 +149,38 @@ pub async fn get_reviews_from_meal(
 
     Ok((StatusCode::OK, Json(json!({ "reviews": res }))))
 }
+
+pub async fn get_review(
+    State(pool): State<Pool>,
+    Path(body): Path<u32>,
+) -> Result<impl IntoResponse, StatusCode> {
+    info!("Reviews from meal: {:?}", body);
+
+    let mut conn = pool
+        .get_conn()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let res: Vec<Review> = conn
+        .exec_iter(
+            r"CALL getReviewsForMeal(:id)",
+            params! {
+                "id" => body,
+            },
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .try_collect::<Review>()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .into_iter()
+        .collect::<Result<Vec<Review>, _>>()
+        .map_err(|e| {
+            info!("Schema error: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?
+        .into_iter()
+        .collect();
+
+    Ok((StatusCode::OK, Json(json!({ "reviews": res }))))
+}
