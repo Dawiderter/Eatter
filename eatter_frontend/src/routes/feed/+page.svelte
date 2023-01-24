@@ -8,7 +8,7 @@
 
 
 <section>
-    <div>
+    <div class = "overflow-y-auto h-screen">
         {#each posts as p}
             <Post
             author = "author1"
@@ -22,22 +22,4 @@
 </section>
 
 <style>
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-    }
-    div {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px;
-    }
-    input {
-        border-radius: var(--corner-radius);
-        border-style: none;
-        padding: 5px;
-        background-color: var(--color-bg-1);
-    }
 </style>

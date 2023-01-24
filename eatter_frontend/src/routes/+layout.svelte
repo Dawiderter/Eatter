@@ -21,20 +21,13 @@
 <Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
 <Navbar bind:sidebar={open}/>
 
-<div class="little_container">
-    <div class="left_container">
-        <nav>
-            
-        </nav>
-    </div>
-    <main>
-        <slot></slot>
-    </main>
+<div  class = "flex items-center justify-center h-screen w-4/12">
+    <slot></slot>
 </div>
 
 
 <style>
-    header {
+    /* header {
         text-align: center;
         padding: 10px 0px;
         margin: 10px;
@@ -93,5 +86,5 @@
 
     li:hover {
         background-color: var(--color-fg-1);
-    }
+    } */
 </style>

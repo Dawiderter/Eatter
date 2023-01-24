@@ -5,7 +5,7 @@
     export let is_logged = false;
 </script>
 
-<aside class="absolute h-full bg-gray-200 border-r-2 shadow-lg p-8" class:open>
+<aside class="absolute h-screen bg-gray-200 border-r-2 shadow-lg p-8" class:open>
 	<nav class="p-12 text-xl font-bold">
         {#if is_logged}
         <a href="/logout">Wyloguj</a>

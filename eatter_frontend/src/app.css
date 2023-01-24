@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
     --font-body: Arial, Helvetica, sans-serif;
 	--color-bg-0: rgb(242, 231, 204);
 	--color-bg-1: hsl(28, 36%, 86%);
@@ -13,4 +13,4 @@
     --corner-radius: 10px;
 	font-family: var(--font-body);
 	color: var(--color-text);
-}
+} */
