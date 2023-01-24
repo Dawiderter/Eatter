@@ -82,6 +82,60 @@ impl FromRow for Review {
     }
 }
 
+#[derive(Serialize, Debug)]
+struct FeedItem {
+    comm_count: u32,
+    review: Review,
+    meal: Meal,
+    local_name: String,
+}
+
+impl FromRow for FeedItem {
+    fn from_row_opt(row: mysql_async::Row) -> Result<Self, FromRowError>
+    where
+        Self: Sized,
+    {
+        let err = || FromRowError(row.clone());
+
+        let comm_num: u32 = row.get_opt("comm_num").ok_or_else(err)?.map_err(|_| err())?;
+
+        let r_id: u32 = row.get_opt("id").ok_or_else(err)?.map_err(|_| err())?;
+        let r_body: String = row.get_opt("body").ok_or_else(err)?.map_err(|_| err())?;
+        let r_created_at: time::PrimitiveDateTime = row.get_opt("created_at")
+            .ok_or_else(err)?
+            .map_err(|e| {info!("{:?}",e); err()})?;
+        let r_score: u32 = row.get_opt("score").ok_or_else(err)?.map_err(|_| err())?;
+        let r_meal_id: u32 = row.get_opt("meal_id").ok_or_else(err)?.map_err(|_| err())?;
+        let r_author_id: u32 = row.get_opt("author_id").ok_or_else(err)?.map_err(|_| err())?;
+
+        let m_id: u32 = row.get_opt("meal_id").ok_or_else(err)?.map_err(|_| err())?;
+        let m_price: u32 = row.get_opt("price").ok_or_else(err)?.map_err(|_| err())?;
+        let m_name: String = row.get_opt("name").ok_or_else(err)?.map_err(|_| err())?;
+        let m_local_id: u32 = row.get_opt("local_id").ok_or_else(err)?.map_err(|_| err())?;
+
+        let l_name: String = row.get_opt("l_name").ok_or_else(err)?.map_err(|_| err())?;
+
+        Ok(Self {
+            comm_count: comm_num,
+            review: Review {
+                id: r_id,
+                body: r_body,
+                created_at: r_created_at.date(),
+                score: r_score,
+                meal_id: r_meal_id,
+                author_id: r_author_id,
+            },
+            meal: Meal {
+                id: m_id,
+                price: m_price,
+                name: m_name,
+                local_id: m_local_id,
+            },
+            local_name: l_name,
+        })
+    }
+}
+
 pub async fn get_meals_from_local(
     State(pool): State<Pool>,
     Path(body): Path<u32>,
@@ -161,20 +215,37 @@ pub async fn get_review(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let res: Vec<Review> = conn
-        .exec_iter(
-            r"CALL getReviewsForMeal(:id)",
+    let res: Review = conn
+        .exec_first(
+            r"CALL getPost(:id)",
             params! {
                 "id" => body,
             },
         )
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .try_collect::<Review>()
+        .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok((StatusCode::OK, Json(json!({ "review": res }))))
+}
+
+pub async fn get_global_feed(State(pool): State<Pool>) -> Result<impl IntoResponse, StatusCode> {
+    info!("Global feed requested");
+
+    let mut conn = pool
+        .get_conn()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let res: Vec<FeedItem> = conn
+        .query_iter(r"CALL getGlobalFeed()")
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .try_collect::<FeedItem>()
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .into_iter()
-        .collect::<Result<Vec<Review>, _>>()
+        .collect::<Result<Vec<FeedItem>, _>>()
         .map_err(|e| {
             info!("Schema error: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
@@ -182,5 +253,5 @@ pub async fn get_review(
         .into_iter()
         .collect();
 
-    Ok((StatusCode::OK, Json(json!({ "reviews": res }))))
+    Ok((StatusCode::OK, Json(json!({ "items": res }))))
 }

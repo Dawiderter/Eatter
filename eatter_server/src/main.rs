@@ -56,6 +56,8 @@ async fn main() {
         .route("/auth/:tok", get(login::get_session))
         .route("/grab/local/:id/meals", get(grab::get_meals_from_local))
         .route("/grab/meal/:id/reviews", get(grab::get_reviews_from_meal))
+        .route("/grab/review/:id", get(grab::get_review))
+        .route("/grab/feed/global", get(grab::get_global_feed))
         .route("/post/review/:tok", post(posts::add_review))
         .layer(
             CorsLayer::new()
