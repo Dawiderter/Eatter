@@ -104,7 +104,7 @@ DELIMITER //
 CREATE PROCEDURE createSession(IN user_id int)
 BEGIN
     IF NOT EXISTS (SELECT * FROM sessions WHERE sessions.user_id = user_id) THEN
-        INSERT INTO sessions(session, user_id) VALUES (PASSWORD(user_id), user_id);
+        INSERT INTO sessions(session, user_id) VALUES (SHA2(user_id,256), user_id);
     END IF;
     SELECT sessions.session FROM sessions WHERE sessions.user_id = user_id;
 END//
@@ -144,21 +144,21 @@ DELIMITER ;
 
 
 DELIMITER //
-CREATE FUNCTION verifyUser(email varchar(30), pass varchar(256))
+CREATE FUNCTION verifyUser(email varchar(30), pass_hash varchar(256))
 RETURNS int
 BEGIN
     DECLARE user_id INT DEFAULT -1;
-    SET user_id = (SELECT users.id FROM users WHERE users.email = email AND users.pass_hash = PASSWORD(pass));
+    SET user_id = (SELECT users.id FROM users WHERE users.email = email AND users.pass_hash = pass_hash);
     RETURN user_id;
 END//
 DELIMITER ;
 
 DROP PROCEDURE loginUser;
 DELIMITER //
-CREATE PROCEDURE loginUser(IN email varchar(30), IN pass varchar(256))
+CREATE PROCEDURE loginUser(IN email varchar(30), IN pass_hash varchar(256))
 BEGIN
     DECLARE user_id INT;
-    SET user_id = verifyUser(email, pass);
+    SET user_id = verifyUser(email, pass_hash);
     IF (user_id > -1) THEN
         CALL createSession(user_id);
     END IF;
@@ -277,5 +277,18 @@ DELIMITER //
 CREATE PROCEDURE getPost(IN review_id INT)
 BEGIN
     SELECT * FROM reviews WHERE reviews.id = review_id;
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
+BEGIN
+	DECLARE tag_id INT;
+	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
+		INSERT INTO tags(name) VALUES (name);
+	END IF;
+	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
+	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
 END//
 DELIMITER ;

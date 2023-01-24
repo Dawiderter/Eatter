@@ -234,7 +234,7 @@ Zamiast posiłku, do którego się odwołują, mają one ID recenzji.
     );
 \end{lstlisting}
 
-\subsection*{Session}
+\subsection*{Sessions}
 Tabela przechowująca obecnie otwarte sesje służy do bezpieczniejszej
 komunikacji między clientem, a serverem. Nie tylko client nie musi teraz
 przechowywać takich rzeczy jak ID usera, ale również rozwiązuje ona nam
@@ -256,4 +256,40 @@ CREATE USER 'server'@'localhost' IDENTIFIED BY 'server';
 SET PASSWORD FOR 'server'@'localhost' = PASSWORD('<enter_pass>');
 GRANT EXECUTE ON eatter.* TO 'server'@'localhost';
 \end{lstlisting}
+Przyznajemy mu na razie tylko możliwość wchodzenia w interakcje z danymi
+za pomocą procedur. Dzięki temu minimalizujemy ryzyko wypłynięcia lub
+przypadkowego skasowania danych. Procedur tych jest cała masa, a tworzone
+są głównie z myślą o konkretnych funkcjach istniejących już na backendzie.
+Przykładem ciekawszych procedur, które można znaleźć w naszym projekcie
+jest system obsługiwania loginów i sesji.
+\begin{lstlisting}[language=SQL]
+    DELIMITER //
+    CREATE PROCEDURE createSession(IN user_id int)
+    BEGIN
+        IF NOT EXISTS (SELECT * FROM sessions WHERE sessions.user_id = user_id) THEN
+            INSERT INTO sessions(session, user_id) VALUES (SHA2(user_id, 256), user_id);
+        END IF;
+        SELECT sessions.session FROM sessions WHERE sessions.user_id = user_id;
+    END//
+
+    CREATE FUNCTION verifyUser(email varchar(30), pass_hash varchar(256))
+    RETURNS int
+    BEGIN
+        DECLARE user_id INT DEFAULT -1;
+        SET user_id = (SELECT users.id FROM users WHERE users.email = email AND users.pass_hash = pass_hash);
+        RETURN user_id;
+    END//
+
+    CREATE PROCEDURE loginUser(IN email varchar(30), IN pass_hash varchar(256))
+    BEGIN
+        DECLARE user_id INT;
+        SET user_id = verifyUser(email, pass_hash);
+        IF (user_id > -1) THEN
+            CALL createSession(user_id);
+        END IF;
+    END//
+    DELIMITER ;
+\end{lstlisting}
+Trzymanie timerów usuwających martwe sesje znajduje się już po stronie
+serwera.
 \end{document}
