@@ -2,6 +2,7 @@
 	export let value = '';
 	export let minRows = 1;
 	export let maxRows = 3;
+	export let name = "text_input";
     export let maxCharacters = 150;
 
     let custom_class = "";
@@ -21,7 +22,7 @@
 		style="min-height: {minHeight}; max-height: {maxHeight}"
 	>{value + '\n'}</pre>
 
-	<textarea maxlength={maxCharacters} bind:value></textarea>	
+	<textarea name={name} maxlength={maxCharacters} bind:value></textarea>	
 </div>
 
 <style>

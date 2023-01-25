@@ -6,4 +6,7 @@
   html {
     font-family: raleway, sans-serif;
   }
+  a:hover {
+    color: rgb(70, 69, 150);
+  }
 }

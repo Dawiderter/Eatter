@@ -106,7 +106,7 @@ CREATE TABLE followers (
 	FOREIGN KEY (followed) REFERENCES users(id)
 );
 
-CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id FROM comments c JOIN users u ON u.id = c.author_id;  
+CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, u.nick AS u_nick FROM comments c JOIN users u ON u.id = c.author_id;  
 
 CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, u.id AS u_id, u.nick AS u_nick, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id JOIN users u ON u.id = r.author_id;

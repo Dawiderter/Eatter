@@ -75,6 +75,13 @@ pub struct LoginBody {
     pass: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct RegisterBody {
+    email: String,
+    pass: String,
+    nick: String,
+}
+
 pub async fn create_session(
     State(pool): State<MySqlPool>,
     State(hash_fn): State<Argon2<'static>>,
@@ -116,7 +123,7 @@ pub async fn create_session(
 pub async fn register(
     State(pool): State<MySqlPool>,
     State(hash_fn): State<Argon2<'static>>,
-    Json(body): Json<LoginBody>,
+    Json(body): Json<RegisterBody>,
 ) -> Result<impl IntoResponse, LoginError> {
     trace!("Registering user");
 
@@ -126,7 +133,7 @@ pub async fn register(
         .hash_password(body.pass.as_bytes(), &salt)?
         .to_string();
 
-    query!("CALL addUser( ?, ?, ? )", body.email, body.email, hash)
+    query!("CALL addUser( ?, ?, ? )", body.email, body.nick, hash)
         .execute(&pool)
         .await
         .map_err(|e| {

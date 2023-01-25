@@ -45,6 +45,7 @@ struct CommentItem {
     c_created_at: time::PrimitiveDateTime,
     r_id: i32,
     u_id: i32,
+    u_nick: String,
 }
 
 #[derive(Serialize, Debug, FromRow)]
