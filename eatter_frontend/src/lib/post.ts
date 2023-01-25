@@ -67,3 +67,4 @@ export const fetch_comments = async (event: RequestEvent, review_id : string) =>
     else {
         return null;
     }
+}
