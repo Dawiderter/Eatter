@@ -5,6 +5,8 @@ export const load = (async (event) => {
     
     const posts = await fetch_global_feed(event);
 
+    console.log(posts.items);
+
     return {
         items: posts
     }

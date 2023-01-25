@@ -8,6 +8,7 @@ GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
