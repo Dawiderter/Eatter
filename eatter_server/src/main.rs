@@ -5,10 +5,9 @@ use axum::{
     Router,
 };
 use clap::Parser;
-use eatter_server::{login, grab, search};
+use eatter_server::{login, gets, search, posts};
 
 use sqlx::{Pool, mysql::{MySqlPoolOptions, MySqlConnectOptions}, MySqlPool};
-use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
@@ -41,11 +40,14 @@ async fn main() {
         .route("/logout/:tok", delete(login::drop_session))
         .route("/register", post(login::register))
         .route("/auth/:tok", get(login::get_session))
-        //.route("/grab/local/:id/meals", get(grab::get_meals_from_local))
-        //.route("/grab/meal/:id/reviews", get(grab::get_reviews_from_meal))
-        //.route("/grab/review/:id", get(grab::get_review))
-        .route("/grab/feed/global", get(grab::get_global_feed))
-        //.route("/post/review/:tok", post(posts::add_review))
+        .route("/grab/local/:id/meals", get(gets::get_meals_from_local))
+        .route("/grab/meal/:id/reviews", get(gets::get_reviews_for_meal))
+        .route("/grab/review/:id", get(gets::get_feed_item))
+        .route("/grab/feed/global", get(gets::get_global_feed))
+        .route("/post/review/:tok", post(posts::add_review))
+        .route("/post/comment/:tok", post(posts::add_comment))
+        .route("/post/local/:tok", post(posts::add_local))
+        .route("/post/meal/:tok", post(posts::add_meal))
         .with_state(state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
