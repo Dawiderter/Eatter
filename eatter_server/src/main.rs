@@ -41,6 +41,7 @@ async fn main() {
         .route("/auth", get(login::get_session))
         .route("/grab/local/:id/meals", get(gets::get_meals_from_local))
         .route("/grab/meal/:id/reviews", get(gets::get_reviews_for_meal))
+        .route("/grab/meal/:id", get(gets::get_meal))
         .route("/grab/meals", get(gets::search_meals_by_tag))
         .route("/grab/review/:id", get(gets::get_feed_item))
         .route("/grab/review/:id/comments", get(gets::get_comments_for_review))
