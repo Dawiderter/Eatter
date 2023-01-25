@@ -10,7 +10,7 @@ use serde_json::json;
 use sqlx::{query, MySqlPool};
 use tracing::{error, info, trace};
 
-use crate::login::{auth_user, LoginError, auth_company, auth_local_ownership, TokenInput};
+use crate::login::{auth_user, LoginError, auth_local_ownership, TokenInput};
 
 pub enum PostError {
     DataBaseError(sqlx::Error),
@@ -33,7 +33,7 @@ pub async fn add_review(
 
     trace!("Review to add: {:?}", body);
 
-    let user = auth_user(&pool, token).await?;
+    let user = auth_user(&pool, token).await?.user_id;
 
     query!(
         "INSERT INTO reviews(body,created_at,score,meal_id,author_id) VALUES (?, ?, ?, ?, ?)",
@@ -66,7 +66,7 @@ pub async fn add_comment(
 
     trace!("Comment to add: {:?}", body);
 
-    let user = auth_user(&pool, token).await?;
+    let user = auth_user(&pool, token).await?.user_id;
 
     query!(
         "INSERT INTO comments(body, created_at, review_id, author_id) VALUES (?, ?, ?, ?)",
@@ -100,7 +100,7 @@ pub async fn add_local(
 
     trace!("Local to add: {:?}", body);
 
-    let company_id = auth_company(&pool, token).await?;
+    let company_id = auth_user(&pool, token).await?.company_id.ok_or(LoginError::AuthError)?;
 
     query!(
         "INSERT INTO locals(name,phone_num,contact_email,address,company_id) VALUES (?, ?, ?, ?, ?)",
@@ -134,7 +134,9 @@ pub async fn add_meal(
 
     trace!("Meal to add: {:?}", body);
 
-    let _company_id = auth_local_ownership(&pool, token, body.local_id).await?;
+    let company_id = auth_user(&pool, token).await?.company_id.ok_or(LoginError::AuthError)?;
+
+    auth_local_ownership(&pool, company_id, body.local_id).await?;
 
     query!(
         "INSERT INTO meals(price,name,local_id) VALUES (?, ?, ?)",

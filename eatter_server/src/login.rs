@@ -8,7 +8,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{prelude::*, query, MySqlPool, query_as};
 use tracing::{error, info, trace};
@@ -19,50 +19,49 @@ pub enum LoginError {
     AuthError,
 }
 
-pub async fn auth_user(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
-    trace!("Auth: {:?}", token);
-    let user_id: Option<i32> = query!("CALL getUserFromSession( ? )", token)
-        .try_map(|row| row.try_get(0))
-        .fetch_optional(pool)
-        .await?;
-
-    let user_id = user_id.ok_or(LoginError::AuthError)?;
-
-    info!("Retrieved id: {:?}", user_id);
-
-    Ok(user_id)
+#[derive(Serialize, Debug)]
+pub struct AuthedUser {
+    pub user_id : i32,
+    pub company_id : Option<i32>,
+    pub mod_id : Option<i32>,
 }
 
-pub async fn auth_company(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
-    trace!("Company auth: {:?}", token);
+pub async fn auth_user(pool: &MySqlPool, token: String) -> Result<AuthedUser, LoginError> {
+    trace!("Auth: {:?}", token);
 
-    let user_id = auth_user(pool, token).await?;
+    let user_id = query!("CALL getUserFromSession( ? )", token)
+        .try_map(|row| row.try_get(0))
+        .fetch_optional(pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
 
     let company_id = query!("SELECT id FROM companies WHERE user_id = ?", user_id)
         .fetch_optional(pool)
         .await?
-        .ok_or(LoginError::AuthError)?
-        .id;
+        .map(|r| r.id);
 
-    info!("Retrieved company id: {:?}", company_id);
+    let mod_id = query!("SELECT id FROM mods WHERE user_id = ?", user_id)
+        .fetch_optional(pool)
+        .await?
+        .map(|r| r.id);
+        
+    info!("Retrieved id: {:?}, {:?}, {:?}", user_id, company_id, mod_id);
 
-    Ok(company_id)
+    Ok(AuthedUser { user_id, company_id, mod_id })
 }
 
-pub async fn auth_local_ownership(pool: &MySqlPool, token: String, local_id: i32) -> Result<i32, LoginError> {
-    trace!("Company auth: {:?}", token);
+pub async fn auth_local_ownership(pool: &MySqlPool, company_id : i32, local_id: i32) -> Result<(), LoginError> {
+    trace!("Company local ownership auth: {:?}, {:?}", company_id, local_id);
 
-    let user_id = auth_user(pool, token).await?;
-
-    let company_id = query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.user_id = ? AND l.id = ?", user_id, local_id)
+    let _company_id = query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.id = ? AND l.id = ?", company_id, local_id)
         .fetch_optional(pool)
         .await?
         .ok_or(LoginError::AuthError)?
         .id;
 
-    info!("Retrieved company id: {:?}", company_id);
+    info!("Authed local ownership");
 
-    Ok(company_id)
+    Ok(())
 }
 
 #[derive(Debug, Deserialize)]
@@ -143,12 +142,12 @@ pub async fn register(
 pub async fn get_session(
     State(pool): State<MySqlPool>,
     Query(tok): Query<TokenInput>,
-) -> Result<StatusCode, LoginError> {
+) -> Result<impl IntoResponse, LoginError> {
     trace!("Getting session");
 
-    let _id = auth_user(&pool, tok.token).await?;
+    let auth = auth_user(&pool, tok.token).await?;
 
-    Ok(StatusCode::OK)
+    Ok(Json(json!(auth)))
 }
 
 pub async fn drop_session(
