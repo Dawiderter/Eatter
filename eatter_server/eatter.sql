@@ -3,6 +3,11 @@ USE eatter;
 CREATE USER 'server'@'localhost' IDENTIFIED BY 'server';
 SET PASSWORD FOR 'server'@'localhost' = PASSWORD('<enter_pass>');
 GRANT EXECUTE ON eatter.* TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.meals TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
 
 CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
@@ -100,9 +105,12 @@ CREATE TABLE followers (
 CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, u.id AS u_id, u.nick AS u_nick, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id JOIN users u ON u.id = r.author_id;
 
-CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price m.name AS m_name, l.id AS l_id, l.name AS l_name 
+CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM meals m JOIN locals l ON m.local_id = l.id;
 
+
+GRANT SELECT, INSERT ON eatter.meal_items TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.feed TO 'server'@'localhost';
 
 DROP PROCEDURE createSession;
 DELIMITER //
