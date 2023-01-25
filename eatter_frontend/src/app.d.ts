@@ -5,7 +5,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			is_logged : boolean
+			auth: Auth | null,
 		}
 		// interface PageData {}
 		// interface Platform {}

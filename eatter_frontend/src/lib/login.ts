@@ -1,17 +1,21 @@
 import type { RequestEvent } from "@sveltejs/kit";
 
-export const get_session = async (event : RequestEvent) => {
+export interface Auth {
+    user_id: number, company_id: number | null, mod_id: number | null
+}
+
+export const get_session = (async (event : RequestEvent): Promise<Auth | null> => {
     let token = event.cookies.get("token");
     if (token) {
         let auth = await event.fetch("http://0.0.0.0:3000/auth?token=" + token);
-        console.log(auth);
-        return auth.ok;
+        let res = await auth.json();
+        return res;
     }
     else {
-        return false
+        return null;
     }
 
-}
+})
 
 export const drop_session = async (event : RequestEvent) => {
     let token = event.cookies.get("token");
@@ -42,3 +46,16 @@ export const create_session = async (event : RequestEvent, email: string, pass: 
     }
 
 }
+
+export const register = (async (event : RequestEvent, email: string, pass: string, nick: string) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/register", {
+        headers: new Headers([['Content-Type', 'application/json']]),
+        method: "POST",
+        body: JSON.stringify({email : email, pass : pass, nick: nick}),
+    });
+
+    if (resp.status == 200) {
+        return true;
+    }
+    return false;
+})

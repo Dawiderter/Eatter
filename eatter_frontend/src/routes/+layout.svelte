@@ -11,7 +11,6 @@
 
     let open = false;
 
-    $: is_logged = data.is_logged;
 </script>
 
 <svelte:head>
@@ -19,7 +18,7 @@
 </svelte:head>
 
 <body class="base w-full h-full font-sans">
-    <Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
+    <Sidebar bind:open = {open} auth={data.auth}/>
     <Navbar bind:sidebar={open}/>
     <div class = "mt-[76px]">
         <slot></slot>

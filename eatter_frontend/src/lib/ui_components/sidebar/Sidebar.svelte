@@ -1,32 +1,36 @@
-<script>
-    import '../../../app.css'
-    import Button from '$lib/ui_components/Button.svelte'
-	import { redirect } from '@sveltejs/kit';
+<script lang="ts">
+    import '../../../app.css';
+	import type { Auth } from '$lib/login';
 	export let open = false
-    export let is_logged = false;
+    export let auth: Auth | null = null;
 </script>
  
 <aside class="absolute flex items-center justify-center h-screen bg-gray-200 border-r-2 shadow-lg p-12" class:open>
     <nav class="p-12 text-xl font-bold">
         <ul class = "space-y-7">
-            <li>
-                {#if is_logged}
-                <a href="/logout">Wyloguj</a>
+                {#if auth != null}
+                <li>
+                    <a href="/logout">Wyloguj</a>
+                </li>
                 {:else}
-                <a href="/login">Zaloguj</a>
+                <li>
+                    <a href="/register">Zarejestruj</a>
+                </li>
+                <li>
+                    <a href="/login">Zaloguj</a>
+                </li>
                 {/if}
-            </li>
             <li>
                 <a href="/feed">Globalny Feed</a>
             </li>
-            {#if is_logged}
+            {#if auth != null}
                 <li>
                     <a href="/">Twój Feed</a>
                 </li>
+                <li>
+                    <a href="/user{auth.user_id}">Profil</a>
+                </li>
             {/if}
-            <li>
-                <a href="/">Profil</a>
-            </li>
         </ul>
     </nav>
 </aside>

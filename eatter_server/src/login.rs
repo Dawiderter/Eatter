@@ -125,7 +125,7 @@ pub async fn register(
     State(hash_fn): State<Argon2<'static>>,
     Json(body): Json<RegisterBody>,
 ) -> Result<impl IntoResponse, LoginError> {
-    trace!("Registering user");
+    trace!("Registering user: {} {}", body.email, body.nick);
 
     let salt = SaltString::generate(&mut OsRng);
 

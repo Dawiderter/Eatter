@@ -158,7 +158,7 @@ pub async fn get_global_feed(
 ) -> Result<impl IntoResponse, GrabError> {
     trace!("Global feed requested");
 
-    let res = query_as!(FeedItem, "SELECT * FROM feed")
+    let res = query_as!(FeedItem, "SELECT * FROM feed ORDER BY r_created_at DESC")
         .fetch_all(&pool)
         .await?;
 
