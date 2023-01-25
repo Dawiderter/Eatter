@@ -35,14 +35,15 @@ async fn main() {
     let state = GlobalState { database: pool,  hash_fn: Argon2::default()};
 
     let app = Router::new()
-        //.route("/search", get(search::search))
         .route("/login", post(login::create_session))
         .route("/logout", delete(login::drop_session))
         .route("/register", post(login::register))
         .route("/auth", get(login::get_session))
         .route("/grab/local/:id/meals", get(gets::get_meals_from_local))
         .route("/grab/meal/:id/reviews", get(gets::get_reviews_for_meal))
+        .route("/grab/meals", get(gets::search_meals_by_tag))
         .route("/grab/review/:id", get(gets::get_feed_item))
+        .route("/grab/review/:id/comments", get(gets::get_comments_for_review))
         .route("/grab/feed/global", get(gets::get_global_feed))
         .route("/post/review", post(posts::add_review))
         .route("/post/comment", post(posts::add_comment))
