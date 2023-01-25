@@ -3,7 +3,7 @@ use argon2::{
     Argon2, PasswordVerifier,
 };
 use axum::{
-    extract::{Path, State},
+    extract::{Path, State, Query},
     http::StatusCode,
     response::IntoResponse,
     Json,
@@ -63,6 +63,11 @@ pub async fn auth_local_ownership(pool: &MySqlPool, token: String, local_id: i32
     info!("Retrieved company id: {:?}", company_id);
 
     Ok(company_id)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TokenInput {
+    pub token: String
 }
 
 #[derive(Debug, Deserialize)]
@@ -137,19 +142,21 @@ pub async fn register(
 
 pub async fn get_session(
     State(pool): State<MySqlPool>,
-    Path(tok): Path<String>,
+    Query(tok): Query<TokenInput>,
 ) -> Result<StatusCode, LoginError> {
     trace!("Getting session");
 
-    let _id = auth_user(&pool, tok).await?;
+    let _id = auth_user(&pool, tok.token).await?;
 
     Ok(StatusCode::OK)
 }
 
 pub async fn drop_session(
     State(pool): State<MySqlPool>,
-    Path(tok): Path<String>,
+    Query(tok): Query<TokenInput>,
 ) -> Result<impl IntoResponse, LoginError> {
+    let tok = tok.token;
+
     trace!("Drop session: {}", tok);
 
     query!("CALL removeSession( ? )", tok)

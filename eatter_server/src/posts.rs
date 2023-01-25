@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, State, Query},
     http::StatusCode,
     response::IntoResponse,
     Json,
@@ -10,7 +10,7 @@ use serde_json::json;
 use sqlx::{query, MySqlPool};
 use tracing::{error, info, trace};
 
-use crate::login::{auth_user, LoginError, auth_company, auth_local_ownership};
+use crate::login::{auth_user, LoginError, auth_company, auth_local_ownership, TokenInput};
 
 pub enum PostError {
     DataBaseError(sqlx::Error),
@@ -26,9 +26,11 @@ pub struct ReviewInput {
 
 pub async fn add_review(
     State(pool): State<MySqlPool>,
-    Path(token): Path<String>,
+    Query(tok): Query<TokenInput>,
     Json(body): Json<ReviewInput>,
 ) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
     trace!("Review to add: {:?}", body);
 
     let user = auth_user(&pool, token).await?;
@@ -57,9 +59,11 @@ pub struct CommentInput {
 
 pub async fn add_comment(
     State(pool): State<MySqlPool>,
-    Path(token): Path<String>,
+    Query(tok): Query<TokenInput>,
     Json(body): Json<CommentInput>,
 ) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
     trace!("Comment to add: {:?}", body);
 
     let user = auth_user(&pool, token).await?;
@@ -89,9 +93,11 @@ pub struct LocalInput {
 
 pub async fn add_local(
     State(pool): State<MySqlPool>,
-    Path(token): Path<String>,
+    Query(tok): Query<TokenInput>,
     Json(body): Json<LocalInput>,
 ) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
     trace!("Local to add: {:?}", body);
 
     let company_id = auth_company(&pool, token).await?;
@@ -121,9 +127,11 @@ pub struct MealInput {
 
 pub async fn add_meal(
     State(pool): State<MySqlPool>,
-    Path(token): Path<String>,
+    Query(tok): Query<TokenInput>,
     Json(body): Json<MealInput>,
 ) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
     trace!("Meal to add: {:?}", body);
 
     let _company_id = auth_local_ownership(&pool, token, body.local_id).await?;
