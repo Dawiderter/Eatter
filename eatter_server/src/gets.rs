@@ -47,11 +47,18 @@ struct CommentItem {
     u_id: i32,
 }
 
+#[derive(Serialize, Debug, FromRow)]
+struct UserItem {
+    u_id: i32,
+    u_nick: String,
+    u_bio: Option<String>,
+}
+
 pub async fn get_meals_from_local(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Meals from local: {:?}", id);
+    trace!("Meals from local: {:?}", id);
 
     let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE l_id = ?", id)
         .fetch_all(&pool)
@@ -64,11 +71,12 @@ pub async fn get_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Meals: {:?}", id);
+    trace!("Meals: {:?}", id);
 
     let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE m_id = ?", id)
-        .fetch_one(&pool)
-        .await?;
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(GrabError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
@@ -77,7 +85,7 @@ pub async fn get_reviews_for_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Reviews for meal: {:?}", id);
+    trace!("Reviews for meal: {:?}", id);
 
     let res = query_as!(FeedItem, "SELECT * FROM feed WHERE m_id = ?", id)
         .fetch_all(&pool)
@@ -90,7 +98,7 @@ pub async fn get_comments_for_review(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Comments for review: {:?}", id);
+    trace!("Comments for review: {:?}", id);
 
     let res = query_as!(
         CommentItem,
@@ -107,12 +115,39 @@ pub async fn get_feed_item(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Review: {:?}", id);
+    trace!("Review: {:?}", id);
 
     let res = query_as!(FeedItem, "SELECT * FROM feed WHERE r_id = ?", id)
         .fetch_optional(&pool)
         .await?
         .ok_or(GrabError::NoItem)?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_user_item(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("User: {:?}", id);
+
+    let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id = ?", id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(GrabError::NoItem)?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_user_followers(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Followers for user: {:?}", id);
+
+    let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id IN (SELECT follower FROM followers WHERE followed = ?)", id)
+        .fetch_all(&pool)
+        .await?;
 
     Ok(Json(json!(res)))
 }
