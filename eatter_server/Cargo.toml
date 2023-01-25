@@ -5,17 +5,22 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.dev.package.sqlx-macros]
+opt-level = 3
+
 [dependencies]
+argon2 = {version = "0.4.1", features = ["password-hash"]}
 async-trait = "0.1.61"
 axum = {version = "0.6.2", features = ["macros"]}
 clap = {version = "4.1.1", features = ["derive"]}
+dotenvy = "0.15.6"
 mysql_async = "0.31.2"
 serde = {version = "1.0.152", features = ["derive"]}
 serde_json = "1.0.91"
+sqlx = {version = "0.6.2", features = ["runtime-tokio-rustls", "mysql", "time", "macros"]}
 time = {version = "0.3.17", features = ["serde"]}
 tokio = {version = "1.24.1", features = ["full"]}
 tower = {version = "0.4.13", features = ["util"]}
-tower-cookies = {version = "0.8.0", features = ["signed"]}
 tower-http = {version = "0.3.5", features = ["fs", "trace", "cors"]}
 tracing = "0.1.37"
 tracing-subscriber = {version = "0.3.16", features = ["env-filter"]}

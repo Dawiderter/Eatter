@@ -6,3 +6,4 @@
 ./report/report.out
 ./report/report.pdf
 ./report/report.sunctex.gz
+.env

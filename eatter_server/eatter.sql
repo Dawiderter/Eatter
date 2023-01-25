@@ -16,7 +16,7 @@ CREATE TABLE sessions (
 	session varchar(256) NOT NULL,
 	user_id int NOT NULL,
 	PRIMARY KEY (session),
-	FOREIGN KEY (user_id) REFERENCES users(id)
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE companies ( 
@@ -97,6 +97,10 @@ CREATE TABLE followers (
 	FOREIGN KEY (followed) REFERENCES users(id)
 );
 
+CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, r.author_id AS r_author_id, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
+	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id;
+
+
 
 
 DROP PROCEDURE createSession;
@@ -133,12 +137,19 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE getPassFromEmail;
+DELIMITER //
+CREATE PROCEDURE getPassFromEmail(IN email varchar(30))
+BEGIN
+    SELECT users.pass_hash FROM users WHERE users.email = email;
+END//
+DELIMITER ;
+
 DROP PROCEDURE addUser;
 DELIMITER //
 CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
 BEGIN
-    INSERT INTO users(email, nick, pass_hash) VALUES
-    (email, nick, PASSWORD(pass));
+    INSERT INTO users(email, nick, pass_hash) VALUES (email, nick, pass);
 END//
 DELIMITER ;
 
@@ -168,7 +179,7 @@ DELIMITER ;
 DROP PROCEDURE getUserIDByEmail;
 DELIMITER //
 CREATE PROCEDURE getUserIDByEmail(IN email varchar(30))
-    SELECT users.id INTO user_id FROM users WHERE users.email = email;
+    SELECT users.id FROM users WHERE users.email = email;
 BEGIN
 END//
 DELIMITER ;

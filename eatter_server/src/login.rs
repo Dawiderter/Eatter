@@ -1,13 +1,37 @@
-use axum::extract::Path;
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::Json;
-use mysql_async::prelude::*;
-use mysql_async::{Conn, Pool};
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, SaltString},
+    Argon2, PasswordVerifier,
+};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Json,
+};
 use serde::Deserialize;
 use serde_json::json;
-use tracing::info;
+use sqlx::{prelude::*, query, MySqlPool};
+use tracing::{error, info, trace};
+
+pub enum LoginError {
+    DataBaseError(sqlx::Error),
+    HashingError(argon2::password_hash::Error),
+    AuthError,
+}
+
+pub async fn auth_helper(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
+    trace!("Auth: {:?}", token);
+    let res: Option<i32> = query!("CALL getUserFromSession( ? )", token)
+        .try_map(|row| row.try_get(0))
+        .fetch_optional(pool)
+        .await?;
+
+    let res = res.ok_or(LoginError::AuthError)?;
+
+    info!("Retrieved id: {:?}", res);
+
+    Ok(res)
+}
 
 #[derive(Debug, Deserialize)]
 pub struct LoginBody {
@@ -15,97 +39,127 @@ pub struct LoginBody {
     pass: String,
 }
 
-pub async fn auth_helper(conn: &mut Conn, token: String) -> Result<u32, StatusCode> {
-    let res: Option<Option<u32>> = conn
-        .exec_first(
-            r"CALL getUserFromSession(:token)",
-            params! {
-                "token" => token,
-            },
-        )
-        .await
-        .map_err(|_| {
-            info!("Wrong auth");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+pub async fn create_session(
+    State(pool): State<MySqlPool>,
+    State(hash_fn): State<Argon2<'static>>,
+    Json(body): Json<LoginBody>,
+) -> Result<impl IntoResponse, LoginError> {
+    trace!("Creating session");
 
-    if let Some(Some(id)) = res {
-        info!("Logged user {id}");
-        Ok(id)
-    } else {
-        info!("Wrong auth");
-        Err(StatusCode::UNAUTHORIZED)
-    }
+    let mut transaction = pool.begin().await?;
+
+    let hash: String = query!("CALL getPassFromEmail( ? )", body.email)
+        .try_map(|row| row.try_get(0))
+        .fetch_optional(&mut transaction)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    let parsed_hash = PasswordHash::new(&hash)?;
+
+    hash_fn.verify_password(body.pass.as_bytes(), &parsed_hash)?;
+
+    let user_id: i32 = query!("CALL getUserIDByEmail( ? )", body.email)
+        .try_map(|row| row.try_get(0))
+        .fetch_optional(&mut transaction)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    let session: String = query!("CALL createSession( ? )", user_id)
+        .try_map(|row| row.try_get(0))
+        .fetch_optional(&mut transaction)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    transaction.commit().await?;
+
+    trace!("Session created: {}", session);
+
+    Ok(Json(json!({ "token": session })))
 }
 
-pub async fn create_session(
-    State(pool): State<Pool>,
+pub async fn register(
+    State(pool): State<MySqlPool>,
+    State(hash_fn): State<Argon2<'static>>,
     Json(body): Json<LoginBody>,
-) -> Result<impl IntoResponse, StatusCode> {
-    info!("Login: {:?}", body);
+) -> Result<impl IntoResponse, LoginError> {
+    trace!("Registering user");
 
-    let mut conn = pool
-        .get_conn()
+    let salt = SaltString::generate(&mut OsRng);
+
+    let hash = hash_fn
+        .hash_password(body.pass.as_bytes(), &salt)?
+        .to_string();
+
+    query!("CALL addUser( ?, ?, ? )", body.email, body.email, hash)
+        .execute(&pool)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| {
+            info!("During registration: {:?}", e);
+            LoginError::AuthError
+        })?;
 
-    let res: Option<Option<String>> = conn
-        .exec_first(
-            r"CALL loginUser(:email, :pass)",
-            params! {
-                "email" => body.email,
-                "pass" => body.pass,
-            },
-        )
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    trace!("User successfully registered");
 
-    //let res: Option<Option<String>> = conn.query_first("SELECT @token").await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if let Some(Some(token)) = res {
-        Ok((StatusCode::OK, Json(json!({ "token": token }))))
-    } else {
-        Err(StatusCode::UNAUTHORIZED)
-    }
+    Ok(StatusCode::OK)
 }
 
 pub async fn get_session(
-    State(pool): State<Pool>,
+    State(pool): State<MySqlPool>,
     Path(tok): Path<String>,
-) -> Result<StatusCode, StatusCode> {
-    info!("Auth: {:?}", tok);
+) -> Result<StatusCode, LoginError> {
+    trace!("Getting session");
 
-    let mut conn = pool
-        .get_conn()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    let id = auth_helper(&mut conn, tok).await?;
-
-    info!("Retrieved id: {:?}", id);
+    let _id = auth_helper(&pool, tok).await?;
 
     Ok(StatusCode::OK)
 }
 
 pub async fn drop_session(
-    State(pool): State<Pool>,
+    State(pool): State<MySqlPool>,
     Path(tok): Path<String>,
-) -> Result<StatusCode, StatusCode> {
-    info!("Drop session: {:?}", tok);
+) -> Result<impl IntoResponse, LoginError> {
+    trace!("Drop session: {}", tok);
 
-    let mut conn = pool
-        .get_conn()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    query!("CALL removeSession( ? )", tok)
+        .execute(&pool)
+        .await?;
 
-    conn.exec_drop(
-        r"CALL removeSession(:token)",
-        params! {
-            "token" => tok,
-        },
-    )
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    trace!("Dropped session: {}", tok);
 
     Ok(StatusCode::OK)
+}
+
+impl From<sqlx::Error> for LoginError {
+    fn from(inner: sqlx::Error) -> Self {
+        Self::DataBaseError(inner)
+    }
+}
+
+impl From<argon2::password_hash::Error> for LoginError {
+    fn from(inner: argon2::password_hash::Error) -> Self {
+        match inner {
+            argon2::password_hash::Error::Password => Self::AuthError,
+            _ => Self::HashingError(inner),
+        }
+    }
+}
+
+impl IntoResponse for LoginError {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            LoginError::DataBaseError(inner) => {
+                error!("Database error: {:?}", inner);
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+            LoginError::HashingError(inner) => {
+                error!("Hashing error: {:?}", inner);
+                StatusCode::INTERNAL_SERVER_ERROR
+            }
+            LoginError::AuthError => {
+                info!("Unauthorized access");
+                StatusCode::UNAUTHORIZED
+            }
+        }
+        .into_response()
+    }
 }
