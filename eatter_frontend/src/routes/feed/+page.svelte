@@ -13,7 +13,9 @@
             author = {p.l_id}
             body = {p.r_body}
             score = {p.r_score}
-            meal = {p.m_name}>
+            meal_name = {p.m_name}
+            created_at = {p.r_created_at}
+            local_name = {p.l_name}>
             </Post>
         {/each}
     </div>
