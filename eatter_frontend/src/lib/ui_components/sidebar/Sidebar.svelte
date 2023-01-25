@@ -5,7 +5,7 @@
     export let is_logged = false;
 </script>
  
-<aside class="absolute flex items-center justify-center h-screen bg-gray-200 border-r-2 shadow-lg p-12" class:open>
+<aside class="absolute w-full flex items-center justify-center h-screen bg-gray-200 border-r-2 shadow-lg p-12" class:open>
 	<nav class="p-12 text-xl font-bold">
         <ul class = "space-y-7">
             <li>

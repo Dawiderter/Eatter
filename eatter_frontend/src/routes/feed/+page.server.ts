@@ -8,7 +8,7 @@ export const load = (async (event) => {
     console.log(posts);
 
     return {
-        items: posts.items
+        items: posts
     }
 
 }) satisfies PageServerLoad;

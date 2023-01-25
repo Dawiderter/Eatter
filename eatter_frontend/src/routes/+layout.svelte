@@ -18,12 +18,12 @@
 	<link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet"/>
 </svelte:head>
 
-<body class="font-sans leading-normal tracking-normal">
+<body class="w-full h-full flex flex-col fixed font-sans">
     <Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
     <Navbar bind:sidebar={open}>
     </Navbar>
-    <div class="h-full flex flex-col items-center justify-center">
-        <div class = "flex items-center justify-center h-full w-4/12">
+    <div class="flex flex-col items-center justify-center">
+        <div class = "flex items-center justify-center w-4/12">
             <slot></slot>
         </div>
     </div>

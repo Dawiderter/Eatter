@@ -10,11 +10,10 @@
     <div class = "flex flex-col items-center justify-center overflow-y-auto h-screen">
         {#each data.items as p}
             <Post
-            author = {p.review.author_id}
-            body = {p.review.body}
-            score = {p.review.score}
-            meal = {p.meal.name}
-            comments_num = {p.comm_count}>
+            author = {p.l_id}
+            body = {p.r_body}
+            score = {p.r_score}
+            meal = {p.m_name}>
             </Post>
         {/each}
     </div>

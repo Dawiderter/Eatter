@@ -3,7 +3,6 @@
     export let body : string;
     export let meal : string;
     export let score : number;
-    export let comments_num : number;
 </script>
 
 <div class = "w-full bg-gray-200 border-r-2 shadow-lg p-8">
