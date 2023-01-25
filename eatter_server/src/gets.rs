@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
     Json,
@@ -7,15 +7,15 @@ use axum::{
 use rust_decimal::Decimal;
 use serde::Serialize;
 use serde_json::json;
-use sqlx::{MySqlPool, query_as};
-use tracing::{info, error, trace};
+use sqlx::{query, query_as, FromRow, MySqlPool};
+use tracing::{error, info, trace};
 
 pub enum GrabError {
     DataBaseError(sqlx::Error),
     NoItem,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, FromRow)]
 struct MealItem {
     m_id: i32,
     m_price: Decimal,
@@ -24,7 +24,7 @@ struct MealItem {
     l_name: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, FromRow)]
 struct FeedItem {
     r_id: i32,
     r_body: String,
@@ -38,13 +38,23 @@ struct FeedItem {
     l_name: String,
 }
 
+#[derive(Serialize, Debug, FromRow)]
+struct CommentItem {
+    c_id: i32,
+    c_body: String,
+    c_created_at: time::PrimitiveDateTime,
+    r_id: i32,
+    u_id: i32,
+}
+
 pub async fn get_meals_from_local(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
     info!("Meals from local: {:?}", id);
 
-    let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE l_id = ?", id).fetch_all(&pool)
+    let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE l_id = ?", id)
+        .fetch_all(&pool)
         .await?;
 
     Ok(Json(json!(res)))
@@ -54,10 +64,28 @@ pub async fn get_reviews_for_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    info!("Reviews from meal: {:?}", id);
+    info!("Reviews for meal: {:?}", id);
 
-    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE m_id = ?", id).fetch_all(&pool)
+    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE m_id = ?", id)
+        .fetch_all(&pool)
         .await?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_comments_for_review(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    info!("Comments for review: {:?}", id);
+
+    let res = query_as!(
+        CommentItem,
+        "SELECT * FROM comment_items WHERE r_id = ?",
+        id
+    )
+    .fetch_all(&pool)
+    .await?;
 
     Ok(Json(json!(res)))
 }
@@ -68,17 +96,35 @@ pub async fn get_feed_item(
 ) -> Result<impl IntoResponse, GrabError> {
     info!("Review: {:?}", id);
 
-    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE r_id = ?", id).fetch_optional(&pool)
+    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE r_id = ?", id)
+        .fetch_optional(&pool)
         .await?
         .ok_or(GrabError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
 
-pub async fn get_global_feed(State(pool): State<MySqlPool>) -> Result<impl IntoResponse, GrabError> {
+pub async fn get_global_feed(
+    State(pool): State<MySqlPool>,
+) -> Result<impl IntoResponse, GrabError> {
     trace!("Global feed requested");
 
-    let res = query_as!(FeedItem, "SELECT * FROM feed").fetch_all(&pool).await?;
+    let res = query_as!(FeedItem, "SELECT * FROM feed")
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn search_meals_by_tag(
+    State(pool): State<MySqlPool>,
+    Query(tag): Query<String>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Tag requested {:?}", tag);
+
+    let res = query_as!(MealItem, "SELECT m.* FROM meal_items m JOIN meals_tags mt ON m.m_id = mt.meal_id JOIN tags t ON t.id = mt.tag_id WHERE t.name LIKE ?", tag)
+        .fetch_all(&pool)
+        .await?;
 
     Ok(Json(json!(res)))
 }
