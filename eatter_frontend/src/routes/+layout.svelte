@@ -18,10 +18,10 @@
 	<link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet"/>
 </svelte:head>
 
-<body class="flex flex-col w-full contents font-sans">
+<body class="w-full h-full font-sans">
     <Sidebar bind:open = {open} bind:is_logged = {is_logged}/>
     <Navbar bind:sidebar={open}/>
-    <div class="flex flex-col items-center justify-center overflow-auto mt-150 pt-500"> 
+    <div class = "mt-[76px]">
         <slot></slot>
     </div>
 
