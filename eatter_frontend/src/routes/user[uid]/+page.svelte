@@ -20,5 +20,9 @@
         {#each data.followers as u}
             <User u={u}/>
         {/each}
+        <h2>Followed:</h2>
+        {#each data.followed as u}
+            <User u={u}/>
+        {/each}
     </div>
 </div>

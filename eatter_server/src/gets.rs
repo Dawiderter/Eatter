@@ -153,6 +153,19 @@ pub async fn get_user_followers(
     Ok(Json(json!(res)))
 }
 
+pub async fn get_user_followed(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Followers for user: {:?}", id);
+
+    let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?)", id)
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(Json(json!(res)))
+}
+
 pub async fn get_global_feed(
     State(pool): State<MySqlPool>,
 ) -> Result<impl IntoResponse, GrabError> {

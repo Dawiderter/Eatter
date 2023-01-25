@@ -1,13 +1,15 @@
-import { change_bio, fetch_user, fetch_user_followers } from '$lib/post';
+import { change_bio, fetch_user, fetch_user_followed, fetch_user_followers } from '$lib/post';
 import type { Actions, PageServerLoad } from './$types';
 
 
 export const load = ( async (event) => {
     const user = await fetch_user(event, event.params.uid);
     const followers = await fetch_user_followers(event, event.params.uid);
+    const followed =  await fetch_user_followed(event, event.params.uid);
     return {
         item: user,
         followers: followers,
+        followed: followed,
         uid: event.params.uid,
     }
 }) satisfies PageServerLoad;
