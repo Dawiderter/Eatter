@@ -6,9 +6,12 @@ const colors = require('tailwindcss/colors')
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
-    color: {
-      
-    }
+    extend: {
+      fontFamily: {
+        jetbrains: ['JetBrains Mono', 'monospace'],
+        'raleway': ['Raleway', 'sans-serif'],
+      },
+    },
   },
   
   plugins: [],

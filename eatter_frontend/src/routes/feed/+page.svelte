@@ -10,6 +10,9 @@
     <div class = "flex flex-col items-center justify-center">
         {#each data.items as p}
             <Post
+            post_id = {p.r_id}
+            meal_id = {p.m_id}
+            author_id = {p.l_id}
             author = {p.l_id}
             body = {p.r_body}
             score = {p.r_score}
