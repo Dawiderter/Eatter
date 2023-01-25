@@ -60,6 +60,19 @@ pub async fn get_meals_from_local(
     Ok(Json(json!(res)))
 }
 
+pub async fn get_meal(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    info!("Meals: {:?}", id);
+
+    let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE m_id = ?", id)
+        .fetch_one(&pool)
+        .await?;
+
+    Ok(Json(json!(res)))
+}
+
 pub async fn get_reviews_for_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,

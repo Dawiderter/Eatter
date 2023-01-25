@@ -1,12 +1,10 @@
 <script lang="ts">
-	import Button from "$lib/ui_components/Button.svelte";
-	import MealCard from "$lib/ui_components/MealCard.svelte";
+	import MealCard from "$lib/ui_components/Meal.svelte";
 
-    export let data : import("./$types").PageData;
+    export let data : import("./$types").PageServerData;
 
-	const onClick = () => {
-		console.log("clicked");
-	}
 </script>
 
-<MealCard on:click = {onClick} name="{data.mid}" />
+<MealCard 
+	meal_item = {data.item} 
+/>
