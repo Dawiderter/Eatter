@@ -132,6 +132,14 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE changeBio;
+DELIMITER //
+CREATE PROCEDURE changeBio(IN user_id int, IN bio_text varchar(200))
+BEGIN
+    UPDATE users SET bio = bio_text WHERE id = user_id;
+END//
+DELIMITER ;
+
 DROP PROCEDURE removeSessionFromId;
 DELIMITER //
 CREATE PROCEDURE removeSessionFromId(IN user_id int)

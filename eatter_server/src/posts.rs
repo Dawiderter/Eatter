@@ -152,6 +152,35 @@ pub async fn add_meal(
     Ok(StatusCode::OK)
 }
 
+#[derive(Deserialize,Debug)]
+pub struct BioInput{
+    bio: String,
+}
+
+pub async fn change_bio(
+    State(pool): State<MySqlPool>,
+    Query(tok): Query<TokenInput>,
+    Json(body): Json<BioInput>,
+) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
+    trace!("Bio to change: {:?}", body);
+
+    let user_id = auth_user(&pool, token).await?.user_id;
+
+    query!(
+        "CALL changeBio (?, ?)",
+        user_id,
+        body.bio
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Bio changed: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
 impl From<sqlx::Error> for PostError {
     fn from(inner: sqlx::Error) -> Self {
         Self::DataBaseError(inner)

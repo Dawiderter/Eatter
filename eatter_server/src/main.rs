@@ -50,6 +50,7 @@ async fn main() {
         .route("/grab/feed/global", get(gets::get_global_feed))
         .route("/post/review", post(posts::add_review))
         .route("/post/comment", post(posts::add_comment))
+        .route("/post/bio", post(posts::change_bio))
         .route("/post/local", post(posts::add_local))
         .route("/post/meal", post(posts::add_meal))
         .with_state(state);
