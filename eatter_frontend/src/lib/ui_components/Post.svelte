@@ -8,6 +8,7 @@
     export let meal_name : string
     export let score : number;
     export let created_at : Date
+    export let check_comments_visible = true;
 
     const inner_date = new Date(created_at);
 
@@ -18,22 +19,10 @@
 <div class = "w-4/12 bg-gray-200 border-r-2 shadow-lg p-8 ">
     
     <h1 class = "font-jetbrains text-2xl">{author}</h1>
-    <h2 class = "font-jetbrains text-xs tab-6">Date: {inner_date.getMonth()} &emsp; | &emsp; Place: {local_name} &emsp; | &emsp; Score: {score}</h2>
+    <h2 class = "font-raleway text-xs tab-6">Date: {inner_date.getMonth()} &emsp; | &emsp; Place: {local_name} &emsp; | &emsp; Score: {score}</h2>
     <h3 class = "text-xl">Meal: {meal_name}</h3>
     <p class = "jetbrains ">{body}</p>
+    {#if check_comments_visible}
     <a href={post_link}>Check comments</a>
+    {/if}
 </div>
-
-
-
-<style>
-    /* div {
-        width: 500px;
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-        margin: 10px;
-        background-color: var(--color-bg-0);
-        border-radius: var(--corner-radius);
-    } */
-</style>

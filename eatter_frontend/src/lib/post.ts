@@ -44,14 +44,24 @@ export const fetch_local_meals = async (event : RequestEvent, local_id : string)
 }
 
 export const fetch_post = async (event : RequestEvent, review_id : string) => {
-    
-    console.log("Fetching post from: " + "http://0.0.0.0:3000/grab/review/" + review_id);
     const resp = await event.fetch("http://0.0.0.0:3000/grab/review/" + review_id);
 
     
     if (resp.status == 200) {
         const res = await resp.json();
-        console.log(res);
+        return res;
+    }
+    else {
+        return null;
+    }
+}
+
+export const fetch_comments = async (event: RequestEvent, review_id : string) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/grab/review/" + review_id + "/comments");
+
+    
+    if (resp.status == 200) {
+        const res = await resp.json();
         return res;
     }
     else {

@@ -9,7 +9,7 @@ module.exports = {
     extend: {
       fontFamily: {
         jetbrains: ['JetBrains Mono', 'monospace'],
-        'raleway': ['Raleway', 'sans-serif'],
+        raleway: ['Raleway', 'sans-serif'],
       },
     },
   },

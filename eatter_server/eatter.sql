@@ -8,6 +8,8 @@ GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
+GRANT SELECT ON eatter.tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 CREATE TABLE users (
@@ -116,6 +118,7 @@ CREATE VIEW user_items AS SELECT u.id AS u_id, u.nick AS u_nick, u.bio AS u_bio 
 
 
 GRANT SELECT, INSERT ON eatter.meal_items TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.comment_items TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.feed TO 'server'@'localhost';
 
 DROP PROCEDURE createSession;
