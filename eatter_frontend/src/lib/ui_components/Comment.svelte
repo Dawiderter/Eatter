@@ -1,28 +1,11 @@
 <script lang="ts">
     export let author : string;
     export let body : string;
-    export let meal : string;
-    export let score : number;
-    export let comments_num : number;
+    export let created_at : Date;
 </script>
 
-<div>
-    <h2>{author}</h2>
-    <h3>Meal: {meal}</h3>
-    {body},
-    <h3>Score: {score}</h3>
+<div class = "w-4/12 bg-gray-200 border-r-2 shadow-lg p-8 ">
+    <h2 class = "font-jetbrains text-xl">{author}</h2>
+    <h3 class = "font-raleway text-xs tab-6">Date: {created_at}</h3>
+    {body}
 </div>
-
-
-
-<style>
-    div {
-        width: 350px;
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-        margin: 10px;
-        background-color: var(--color-bg-0);
-        border-radius: var(--corner-radius);
-    }
-</style>
