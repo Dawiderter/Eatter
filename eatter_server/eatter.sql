@@ -16,6 +16,7 @@ CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
 	email varchar(30) NOT NULL UNIQUE, 
 	nick varchar(15) NOT NULL,
+	bio varchar(200),
 	pass_hash varchar(256) NOT NULL,
 	PRIMARY KEY (id)
 );
@@ -113,6 +114,7 @@ CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_cre
 CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM meals m JOIN locals l ON m.local_id = l.id;
 
+CREATE VIEW user_items AS SELECT u.id AS u_id, u.nick AS u_nick, u.bio AS u_bio FROM users u;
 
 
 GRANT SELECT, INSERT ON eatter.meal_items TO 'server'@'localhost';
