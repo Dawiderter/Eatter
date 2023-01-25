@@ -7,7 +7,7 @@
 
 
 <section>
-    <div class = "flex flex-col items-center justify-center overflow-y-auto h-screen">
+    <div class = "flex flex-col items-center justify-center">
         {#each data.items as p}
             <Post
             author = {p.l_id}
