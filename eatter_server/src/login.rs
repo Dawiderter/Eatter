@@ -10,7 +10,7 @@ use axum::{
 };
 use serde::Deserialize;
 use serde_json::json;
-use sqlx::{prelude::*, query, MySqlPool};
+use sqlx::{prelude::*, query, MySqlPool, query_as};
 use tracing::{error, info, trace};
 
 pub enum LoginError {
@@ -19,18 +19,50 @@ pub enum LoginError {
     AuthError,
 }
 
-pub async fn auth_helper(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
+pub async fn auth_user(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
     trace!("Auth: {:?}", token);
-    let res: Option<i32> = query!("CALL getUserFromSession( ? )", token)
+    let user_id: Option<i32> = query!("CALL getUserFromSession( ? )", token)
         .try_map(|row| row.try_get(0))
         .fetch_optional(pool)
         .await?;
 
-    let res = res.ok_or(LoginError::AuthError)?;
+    let user_id = user_id.ok_or(LoginError::AuthError)?;
 
-    info!("Retrieved id: {:?}", res);
+    info!("Retrieved id: {:?}", user_id);
 
-    Ok(res)
+    Ok(user_id)
+}
+
+pub async fn auth_company(pool: &MySqlPool, token: String) -> Result<i32, LoginError> {
+    trace!("Company auth: {:?}", token);
+
+    let user_id = auth_user(pool, token).await?;
+
+    let company_id = query!("SELECT id FROM companies WHERE user_id = ?", user_id)
+        .fetch_optional(pool)
+        .await?
+        .ok_or(LoginError::AuthError)?
+        .id;
+
+    info!("Retrieved company id: {:?}", company_id);
+
+    Ok(company_id)
+}
+
+pub async fn auth_local_ownership(pool: &MySqlPool, token: String, local_id: i32) -> Result<i32, LoginError> {
+    trace!("Company auth: {:?}", token);
+
+    let user_id = auth_user(pool, token).await?;
+
+    let company_id = query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.user_id = ? AND l.id = ?", user_id, local_id)
+        .fetch_optional(pool)
+        .await?
+        .ok_or(LoginError::AuthError)?
+        .id;
+
+    info!("Retrieved company id: {:?}", company_id);
+
+    Ok(company_id)
 }
 
 #[derive(Debug, Deserialize)]
@@ -109,7 +141,7 @@ pub async fn get_session(
 ) -> Result<StatusCode, LoginError> {
     trace!("Getting session");
 
-    let _id = auth_helper(&pool, tok).await?;
+    let _id = auth_user(&pool, tok).await?;
 
     Ok(StatusCode::OK)
 }

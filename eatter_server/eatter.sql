@@ -22,7 +22,7 @@ CREATE TABLE sessions (
 CREATE TABLE companies ( 
 	id int NOT NULL AUTO_INCREMENT,
 	name varchar(30) NOT NULL UNIQUE,
-	user_id int NOT NULL UNIQUE,
+	user_id int UNIQUE,
 	PRIMARY KEY (id),
 	FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -40,7 +40,7 @@ CREATE TABLE locals (
 
 CREATE TABLE meals (
 	id int NOT NULL AUTO_INCREMENT,
-	price int NOT NULL,
+	price decimal(6,2) NOT NULL,
 	name varchar(30) NOT NULL, 
 	local_id int NOT NULL,
 	PRIMARY KEY (id),
@@ -100,7 +100,8 @@ CREATE TABLE followers (
 CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, r.author_id AS r_author_id, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id;
 
-
+CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price m.name AS m_name, l.id AS l_id, l.name AS l_name 
+	FROM meals m JOIN locals l ON m.local_id = l.id;
 
 
 DROP PROCEDURE createSession;
