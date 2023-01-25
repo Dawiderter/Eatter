@@ -1,12 +1,12 @@
-import { fetch_global_feed } from "$lib/post";
+import { fetch_post } from "$lib/post";
 import type { PageServerLoad } from "./$types";
 
 export const load = (async (event) => {
     
-    const posts = await fetch_global_feed(event);
+    const post = await fetch_post(event, event.params.pid);
 
     return {
-        items: posts
+        items: post
     }
 
 }) satisfies PageServerLoad;
