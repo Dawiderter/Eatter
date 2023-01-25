@@ -3,10 +3,9 @@
     export let body : string;
     export let meal : string;
     export let score : number;
-    export let comments_num : number;
 </script>
 
-<div class = "w-full bg-gray-200 border-r-2 shadow-lg p-8">
+<div class = "w-4/12 bg-gray-200 border-r-2 shadow-lg p-8">
     <h2 class = "text-2xl">{author}</h2>
     <h3>Meal: {meal}</h3>
     {body},
