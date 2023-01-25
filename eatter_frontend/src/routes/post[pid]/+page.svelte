@@ -1,9 +1,15 @@
 <script lang="ts">
+	import { post_comment } from "$lib/post";
 	import Comment from "$lib/ui_components/Comment.svelte";
-import Post from "$lib/ui_components/Post.svelte";
-	import { each } from "svelte/internal";
+    import Post from "$lib/ui_components/Post.svelte";
+	import ResizableInput from "$lib/ui_components/ResizableInput.svelte";
 
     export let data : import("./$types").PageData;
+
+    let comment_input_body = "";
+
+    let custom_class = "";
+	export { custom_class as class };
 
     const post = data.post;
     const comments = data.comments;
@@ -22,9 +28,19 @@ import Post from "$lib/ui_components/Post.svelte";
         local_name = {post.l_name}
         check_comments_visible = {false}>
         </Post>
-        <h1 class = "mt-[20px] text-xl font-raleway">Comments:</h1>
     </div>
     <div>
+        <div class = "w-4/12 input-group">
+            <label for = "commentinput">Insert comment</label>
+            <ResizableInput
+                class = "w-8/12"
+                bind:value={comment_input_body}  
+                minRows={2}
+                maxRows={5}
+            />
+            <button class = "mt-[10px] bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">submit</button>
+        </div>
+        <h1 class = "mt-[10px] mb-[10px] text-xl font-raleway">Comments:</h1>
         {#each comments as comm}
             <Comment
                 author = {comm.u_id}

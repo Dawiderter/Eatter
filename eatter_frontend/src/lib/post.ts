@@ -68,3 +68,17 @@ export const fetch_comments = async (event: RequestEvent, review_id : string) =>
         return null;
     }
 }
+
+export const post_comment = async (event : RequestEvent, review_id : number, body : string) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/post/comment?token=" + event.cookies.get("token"), {
+        headers: new Headers([['Content-Type', 'application/json']]),
+        method: "POST",
+        body: JSON.stringify({review_id : review_id, body : body}),
+    });
+
+    if (resp.status == 200) {
+        return true;
+    }
+    
+    return false;
+}

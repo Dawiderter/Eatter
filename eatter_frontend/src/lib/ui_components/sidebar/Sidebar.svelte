@@ -1,4 +1,5 @@
 <script>
+    import '../../../app.css'
     import Button from '$lib/ui_components/Button.svelte'
 	import { redirect } from '@sveltejs/kit';
 	export let open = false

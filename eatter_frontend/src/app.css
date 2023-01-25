@@ -2,15 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-    --font-body: Arial, Helvetica, sans-serif;
-	--color-bg-0: rgb(242, 231, 204);
-	--color-bg-1: hsl(28, 36%, 86%);
-	--color-bg-2: hsl(55, 44%, 95%);
-    --color-fg-0: hsl(38, 84%, 71%);
-    --color-fg-1: hsl(36, 93%, 88%);
-	--color-text: rgba(0, 0, 0, 0.7);
-    --corner-radius: 10px;
-	font-family: var(--font-body);
-	color: var(--color-text);
-} */
+@layer base {
+  html {
+    font-family: raleway, sans-serif;
+  }
+}

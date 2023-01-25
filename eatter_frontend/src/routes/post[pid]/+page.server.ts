@@ -1,5 +1,5 @@
-import { fetch_post, fetch_comments } from "$lib/post";
-import type { PageServerLoad } from "./$types";
+import { fetch_post, fetch_comments, post_comment } from "$lib/post";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load = (async (event) => {
     
@@ -12,3 +12,17 @@ export const load = (async (event) => {
     }
 
 }) satisfies PageServerLoad;
+
+export const actions = {
+    default: async (event) => {
+        const data = await event.request.formData();
+
+        const email = data.get('email');
+        const pass = data.get('pass');
+
+        
+        if (email != null && pass != null) {
+        // await post_comment(event, email?.valueOf().toString(), pass?.valueOf().toString());
+        }
+    }   
+} satisfies Actions ;
