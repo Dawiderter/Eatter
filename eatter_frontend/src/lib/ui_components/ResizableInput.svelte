@@ -8,7 +8,7 @@
     let custom_class = "";
 	export { custom_class as class };
 
-    custom_class = custom_class + " container";
+    custom_class = custom_class + " container flex";
 
     let comment_input_body = "";
 	
@@ -16,15 +16,8 @@
 	$: maxHeight = maxRows ? `${1 + maxRows * 1.2}em` : `auto`;
 </script>
 
-<div class={custom_class}>
-	<pre
-		aria-hidden="true"
-		style="min-height: {minHeight}; max-height: {maxHeight}"
-	>{value + '\n'}</pre>
-
-	<textarea name={name} maxlength={maxCharacters} bind:value></textarea>	
-</div>
-
+	<textarea class = "resize-none border border-gray-300 rounded-lg bg-gray-50" name={name} maxlength={maxCharacters} bind:value></textarea>	
+	
 <style>
 	.container {
 		position: relative;
@@ -37,13 +30,5 @@
 		border: 1px solid #eee;
 		line-height: 1.2;
 		overflow: hidden;
-	}
-	
-	textarea {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		resize: none;
 	}
 </style>

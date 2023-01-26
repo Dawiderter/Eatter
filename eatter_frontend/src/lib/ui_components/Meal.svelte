@@ -4,13 +4,13 @@
 </script>
 
 <article>
-    <a href="/local{meal_item.l_id}/meal{meal_item.m_id}">
+    <a class = "text-xl font-bold" href="/local{meal_item.l_id}/meal{meal_item.m_id}">
         <h1>{meal_item.m_name}</h1>
     </a>
-    <h2>{meal_item.m_price} zł</h2>
-    <a href="/local{meal_item.l_id}">
+    <h2 class = "font-raleway">{meal_item.m_price} zł
+    <a href="/local{meal_item.l_id}"> &emsp; | &emsp;
         {meal_item.l_name}
-    </a>
+    </a> </h2>
 
 </article>
 

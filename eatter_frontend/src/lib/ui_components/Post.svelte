@@ -3,11 +3,13 @@
 
     export let comments = true;
 
+    export let size = "w-4/12";
+
     const stars = '★'.repeat(p.r_score);
 </script>
 
 
-<div class = "rounded-lg w-4/12 bg-gray-200 border-r-2 shadow-lg p-8">
+<div class = "rounded-lg {size} bg-gray-200 border-r-2 shadow-lg p-8">
     
         <h1 class = "font-jetbrains font-bold text-2xl">
             <a href="/user{p.u_id}">{p.u_nick}</a> → <a href="/local{p.l_id}/meal{p.m_id}">{p.m_name}</a> 

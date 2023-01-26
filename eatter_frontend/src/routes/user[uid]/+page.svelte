@@ -6,33 +6,33 @@
     export let data : PageData;
 </script>
 
-<div>
+<div class = "p-[10px] flex flex-col items-center justify-center space-y-5">
     <User u={data.item}/>
     {#if data.auth.user_id == data.uid}
 		<form class="w-4/12 input-group z-0" method="post" action="?/bio">
-		    Zmień bio:
+		    <label for = "bio_body" class = "font-raleway">Change bio:</label>
 			<ResizableInput name="bio_body" class = "w-8/12" minRows={2} maxRows={5}/>
-			<button>Zamieść</button>
+			<button>confirm</button>
 		</form>
 	{:else}
-        {#if data.followers.some((u) => u.u_id === data.auth.user_id)}
+        {#if data.followers.some(u => u.u_id === data.auth.user_id)}
             <form class="w-4/12 input-group z-0" method="post" action="?/unfollow">
-                <button>Odobserwuj</button>
+                <button>Unfollow</button>
             </form>    
         {:else}
             <form class="w-4/12 input-group z-0" method="post" action="?/follow">
-                <button>Obserwuj</button>
+                <button>Follow</button>
             </form>
         {/if}
     {/if}
     <div>
-        <h2>Followers:</h2>
+        <h2 class = "mt-[10px] mb-[10px] text-2xl font-raleway">Followers:</h2>
         {#each data.followers as u}
-            <User u={u}/>
+            u.u_nick
         {/each}
-        <h2>Followed:</h2>
+        <h2 class = "mt-[10px] mb-[10px] text-2xl font-raleway">Followed:</h2>
         {#each data.followed as u}
-            <User u={u}/>
+            u.u_nick
         {/each}
     </div>
 </div>

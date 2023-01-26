@@ -6,20 +6,22 @@
     export let data : import("./$types").PageData;
 
 </script>
-<div>
+<div class = "relative">
 	<MealCard meal_item = {data.item} />
 	{#if data.auth}
-		<form class="w-4/12 input-group z-0" method="post">
+	<div>
+		<form class="input-group z-0" method="post">
 			Write a review:
-			<ResizableInput name="review_body" class = "w-8/12" minRows={2} maxRows={5}/>
+			<ResizableInput name="review_body" class = "pt-2 w-8/12" minRows={2} maxRows={5}/>
 			<input type="range" name="review_score" min="0" max="5">
-			<button>Zamieść</button>
+			<button class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">Post</button>
 		</form>
+	</div>
 	{/if}
 	<div class = "p-5 flex flex-col items-center justify-center space-y-5">
         <h1 class = "mt-[10px] mb-[10px] text-2xl font-raleway">Reviews:</h1>
         {#each data.reviews as p}
-            <Post p={p} />
+            <Post size="w-10/12" p={p} />
         {/each}
     </div>
 </div>
