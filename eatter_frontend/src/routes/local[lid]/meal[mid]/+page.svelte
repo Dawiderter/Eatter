@@ -7,7 +7,7 @@
 
 </script>
 <div class = "relative">
-	<MealCard meal_item = {data.item} />
+	<MealCard selected = {true} meal_item = {data.item} />
 	{#if data.auth}
 	<div>
 		<form class="input-group z-0" method="post">

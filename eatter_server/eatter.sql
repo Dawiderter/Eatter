@@ -3,15 +3,6 @@ USE eatter;
 CREATE USER 'server'@'localhost' IDENTIFIED BY 'server';
 SET PASSWORD FOR 'server'@'localhost' = PASSWORD('<enter_pass>');
 GRANT EXECUTE ON eatter.* TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.meals TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
-GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
-GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
-GRANT SELECT ON eatter.tags TO 'server'@'localhost';
-GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
@@ -50,7 +41,7 @@ CREATE TABLE locals (
 
 CREATE TABLE meals (
 	id int NOT NULL AUTO_INCREMENT,
-	price decimal(6,2) NOT NULL,
+	price decimal(6,2) UNSIGNED NOT NULL,
 	name varchar(30) NOT NULL, 
 	local_id int NOT NULL,
 	PRIMARY KEY (id),
@@ -61,12 +52,13 @@ CREATE TABLE reviews (
 	id int NOT NULL AUTO_INCREMENT,
 	body varchar(300) NOT NULL, 
 	created_at datetime NOT NULL, 
-	score int NOT NULL, 
+	score int UNSIGNED NOT NULL, 
 	meal_id int NOT NULL, 
 	author_id int NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (meal_id) REFERENCES meals(id),
-	FOREIGN KEY (author_id) REFERENCES users(id)
+	FOREIGN KEY (author_id) REFERENCES users(id),
+	CHECK(score>0 AND score<6)
 );
 
 CREATE TABLE comments (
@@ -77,7 +69,8 @@ CREATE TABLE comments (
 	author_id int NOT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (review_id) REFERENCES reviews(id),
-	FOREIGN KEY (author_id) REFERENCES users(id)
+	FOREIGN KEY (author_id) REFERENCES users(id),
+	CHECK(LEN(body) > 30)
 );
 
 CREATE TABLE tags (
@@ -104,7 +97,8 @@ CREATE TABLE followers (
 	followed int NOT NULL, 
 	PRIMARY KEY (follower, followed),
 	FOREIGN KEY (follower) REFERENCES users(id),
-	FOREIGN KEY (followed) REFERENCES users(id)
+	FOREIGN KEY (followed) REFERENCES users(id),
+	CHECK(follower <> followed)
 );
 
 CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, u.nick AS u_nick FROM comments c JOIN users u ON u.id = c.author_id;  
@@ -126,6 +120,16 @@ GRANT SELECT ON eatter.local_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.user_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.comment_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.feed TO 'server'@'localhost';
+
+GRANT SELECT, INSERT ON eatter.meals TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
+GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
+GRANT SELECT ON eatter.tags TO 'server'@'localhost';
+GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 DROP PROCEDURE createSession;
 DELIMITER //
@@ -333,5 +337,12 @@ BEGIN
 	END IF;
 	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
 	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
+END//
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER check_user_data_ins BEFORE INSERT ON users FOR EACH getReviewsForMeal
+BEGIN
 END//
 DELIMITER ;
