@@ -51,6 +51,17 @@ struct CommentItem {
 }
 
 #[derive(Serialize, Debug, FromRow)]
+struct LocalItem {
+    l_id: i32,
+    l_name: String,
+    l_phone_num: String,
+    l_contact_email: String,
+    l_address: String,
+    c_id: i32,
+    c_name: String,
+}
+
+#[derive(Serialize, Debug, FromRow)]
 struct UserItem {
     u_id: i32,
     u_nick: String,
@@ -135,6 +146,20 @@ pub async fn get_user_item(
     trace!("User: {:?}", id);
 
     let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id = ?", id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(GrabError::NoItem)?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_local_item(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Local: {:?}", id);
+
+    let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE l_id = ?", id)
         .fetch_optional(&pool)
         .await?
         .ok_or(GrabError::NoItem)?;

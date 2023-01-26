@@ -40,6 +40,7 @@ async fn main() {
         .route("/register", post(login::register))
         .route("/auth", get(login::get_session))
         .route("/grab/local/:id/meals", get(gets::get_meals_from_local))
+        .route("/grab/local/:id", get(gets::get_local_item))
         .route("/grab/meal/:id/reviews", get(gets::get_reviews_for_meal))
         .route("/grab/meal/:id", get(gets::get_meal))
         .route("/grab/meals", get(gets::search_meals_by_tag))

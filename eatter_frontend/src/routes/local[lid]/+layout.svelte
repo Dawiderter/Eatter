@@ -1,9 +1,11 @@
 <script lang="ts">
+	import Local from "$lib/ui_components/Local.svelte";
+
     export let data : import("./$types").LayoutData;
 </script>
 
 <div>
-    <h1>Local {data.lid}</h1>
+    <Local l={data.local}/>
     <slot></slot>
 </div>
 

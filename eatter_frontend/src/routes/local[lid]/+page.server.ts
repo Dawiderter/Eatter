@@ -1,4 +1,4 @@
-import { fetch_local_meals, fetch_meal, fetch_post } from "$lib/post";
+import { fetch_local, fetch_local_meals, fetch_meal, fetch_post } from "$lib/post";
 import type { PageServerLoad } from "./$types";
 
 export const load = (async (event) => {
@@ -6,7 +6,7 @@ export const load = (async (event) => {
     const meals = await fetch_local_meals(event, event.params.lid);
 
     return {
-        items: meals
+        items: meals,
     }
 
 }) satisfies PageServerLoad;
