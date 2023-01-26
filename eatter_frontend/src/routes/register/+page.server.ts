@@ -10,8 +10,9 @@ export const actions = {
     const pass = data.get('pass');
     const nick = data.get('nick');
     
-    if (email != null && pass != null && nick != null) {
-      await register(event, email.valueOf().toString(), pass.valueOf().toString(), nick.valueOf().toString());
+    if (email == null || pass == null || nick == null) {
+      return;
     }
+      await register(event, email.valueOf().toString(), pass.valueOf().toString(), nick.valueOf().toString());
   }   
 } satisfies Actions ;

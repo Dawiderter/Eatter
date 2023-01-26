@@ -14,9 +14,6 @@
                 </li>
                 {:else}
                 <li>
-                    <a href="/register">Zarejestruj</a>
-                </li>
-                <li>
                     <a href="/login">Zaloguj</a>
                 </li>
                 {/if}

@@ -3,10 +3,13 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: raleway, sans-serif;
-  }
   a:hover {
-    color: rgb(70, 69, 150);
+    @apply text-sky-800;
+  }
+  input {
+    @apply border;
+    @apply border-gray-300;
+    @apply rounded-lg;
+    @apply bg-gray-50;
   }
 }

@@ -17,14 +17,14 @@ export const actions = {
     default: async (event) => {
         const data = await event.request.formData();
 
-        const body = data.get('comment_body');
-        const review_id = event.params.pid; 
+        const email = data.get('email');
+        const pass = data.get('pass');
 
-        console.log(body);
-        console.log(review_id);
         
-        if (review_id != null && body != null) {
-            await post_comment(event, parseInt(review_id), body.valueOf().toString());
+        if (email == null || pass == null) {
+            return;
         }
+        await post_comment(event, email?.valueOf().toString(), pass?.valueOf().toString());
     }   
 } satisfies Actions ;
+

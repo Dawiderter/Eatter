@@ -10,8 +10,12 @@ export const actions = {
     const pass = data.get('pass');
 
     
-    if (email != null && pass != null) {
-      await create_session(event, email?.valueOf().toString(), pass?.valueOf().toString());
+    if (email == null || pass == null) {
+      return;
+    }
+
+    if(await create_session(event, email?.valueOf().toString(), pass?.valueOf().toString())) {
+      
     }
   }   
 } satisfies Actions ;
