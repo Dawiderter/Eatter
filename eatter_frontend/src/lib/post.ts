@@ -14,6 +14,19 @@ export const fetch_global_feed = async (event : RequestEvent) => {
 
 }
 
+
+export const fetch_personal_feed = async (event : RequestEvent) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/grab/feed/personal?token=" + event.cookies.get("token"));
+
+    if (resp.status == 200) {
+        const res = await resp.json();
+        return res;
+    }
+    else {
+        return null;
+    }
+}
+
 export const fetch_meal = async (event : RequestEvent, meal_id : string) => {
     
     const resp = await event.fetch("http://0.0.0.0:3000/grab/meal/" + meal_id);

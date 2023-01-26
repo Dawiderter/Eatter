@@ -49,6 +49,7 @@ async fn main() {
         .route("/grab/user/:id/followed", get(gets::get_user_followed))
         .route("/grab/review/:id/comments", get(gets::get_comments_for_review))
         .route("/grab/feed/global", get(gets::get_global_feed))
+        .route("/grab/feed/personal", get(gets::get_personal_feed))
         .route("/post/review", post(posts::add_review))
         .route("/post/comment", post(posts::add_comment))
         .route("/post/bio", post(posts::change_bio))

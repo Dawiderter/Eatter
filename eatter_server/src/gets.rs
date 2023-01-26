@@ -10,6 +10,8 @@ use serde_json::json;
 use sqlx::{query, query_as, FromRow, MySqlPool};
 use tracing::{error, info, trace};
 
+use crate::login::{auth_user, TokenInput};
+
 pub enum GrabError {
     DataBaseError(sqlx::Error),
     NoItem,
@@ -172,6 +174,23 @@ pub async fn get_global_feed(
     trace!("Global feed requested");
 
     let res = query_as!(FeedItem, "SELECT * FROM feed ORDER BY r_created_at DESC")
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_personal_feed(
+    State(pool): State<MySqlPool>,
+    Query(token): Query<TokenInput>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Personal feed requested");
+
+    let user_id = auth_user(&pool, token.token)
+        .await
+        .map_err(|_| GrabError::NoItem)?;
+
+    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?) ORDER BY r_created_at DESC", user_id.user_id)
         .fetch_all(&pool)
         .await?;
 
