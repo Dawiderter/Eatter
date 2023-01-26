@@ -104,11 +104,37 @@ export const fetch_user_followers = async (event: RequestEvent, user_id : string
     }
 }
 
+export const fetch_user_followed = async (event: RequestEvent, user_id : string) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/grab/user/" + user_id + "/followed");
+    
+    if (resp.status == 200) {
+        const res = await resp.json();
+        return res;
+    }
+    else {
+        return null;
+    }
+}
+
 export const post_comment = async (event : RequestEvent, review_id : number, body : string) => {
     const resp = await event.fetch("http://0.0.0.0:3000/post/comment?token=" + event.cookies.get("token"), {
         headers: new Headers([['Content-Type', 'application/json']]),
         method: "POST",
         body: JSON.stringify({review_id : review_id, body : body}),
+    });
+
+    if (resp.status == 200) {
+        return true;
+    }
+    
+    return false;
+}
+
+export const change_bio = async (event : RequestEvent, body : string) => {
+    const resp = await event.fetch("http://0.0.0.0:3000/post/bio?token=" + event.cookies.get("token"), {
+        headers: new Headers([['Content-Type', 'application/json']]),
+        method: "POST",
+        body: JSON.stringify({bio : body}),
     });
 
     if (resp.status == 200) {

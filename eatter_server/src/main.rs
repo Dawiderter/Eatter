@@ -46,10 +46,12 @@ async fn main() {
         .route("/grab/review/:id", get(gets::get_feed_item))
         .route("/grab/user/:id", get(gets::get_user_item))
         .route("/grab/user/:id/followers", get(gets::get_user_followers))
+        .route("/grab/user/:id/followed", get(gets::get_user_followed))
         .route("/grab/review/:id/comments", get(gets::get_comments_for_review))
         .route("/grab/feed/global", get(gets::get_global_feed))
         .route("/post/review", post(posts::add_review))
         .route("/post/comment", post(posts::add_comment))
+        .route("/post/bio", post(posts::change_bio))
         .route("/post/local", post(posts::add_local))
         .route("/post/meal", post(posts::add_meal))
         .with_state(state);
