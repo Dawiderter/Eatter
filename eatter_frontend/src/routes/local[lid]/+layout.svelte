@@ -17,3 +17,4 @@
         flex-direction: column;
         text-align: center;
     }
+</style>
