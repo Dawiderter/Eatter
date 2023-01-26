@@ -22,7 +22,7 @@
             </li>
             {#if auth != null}
                 <li>
-                    <a href="/">Twój Feed</a>
+                    <a href="/your_feed">Twój Feed</a>
                 </li>
                 <li>
                     <a href="/user{auth.user_id}">Profil</a>

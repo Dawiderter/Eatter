@@ -10,6 +10,8 @@ use serde_json::json;
 use sqlx::{query, query_as, FromRow, MySqlPool};
 use tracing::{error, info, trace};
 
+use crate::login::{auth_user, TokenInput};
+
 pub enum GrabError {
     DataBaseError(sqlx::Error),
     NoItem,
@@ -46,6 +48,17 @@ struct CommentItem {
     r_id: i32,
     u_id: i32,
     u_nick: String,
+}
+
+#[derive(Serialize, Debug, FromRow)]
+struct LocalItem {
+    l_id: i32,
+    l_name: String,
+    l_phone_num: String,
+    l_contact_email: String,
+    l_address: String,
+    c_id: i32,
+    c_name: String,
 }
 
 #[derive(Serialize, Debug, FromRow)]
@@ -140,6 +153,20 @@ pub async fn get_user_item(
     Ok(Json(json!(res)))
 }
 
+pub async fn get_local_item(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Local: {:?}", id);
+
+    let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE l_id = ?", id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(GrabError::NoItem)?;
+
+    Ok(Json(json!(res)))
+}
+
 pub async fn get_user_followers(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
@@ -172,6 +199,23 @@ pub async fn get_global_feed(
     trace!("Global feed requested");
 
     let res = query_as!(FeedItem, "SELECT * FROM feed ORDER BY r_created_at DESC")
+        .fetch_all(&pool)
+        .await?;
+
+    Ok(Json(json!(res)))
+}
+
+pub async fn get_personal_feed(
+    State(pool): State<MySqlPool>,
+    Query(token): Query<TokenInput>,
+) -> Result<impl IntoResponse, GrabError> {
+    trace!("Personal feed requested");
+
+    let user_id = auth_user(&pool, token.token)
+        .await
+        .map_err(|_| GrabError::NoItem)?;
+
+    let res = query_as!(FeedItem, "SELECT * FROM feed WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?) ORDER BY r_created_at DESC", user_id.user_id)
         .fetch_all(&pool)
         .await?;
 

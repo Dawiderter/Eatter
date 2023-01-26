@@ -117,6 +117,16 @@ CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_n
 
 CREATE VIEW user_items AS SELECT u.id AS u_id, u.nick AS u_nick, u.bio AS u_bio FROM users u;
 
+	id int NOT NULL AUTO_INCREMENT,
+	name varchar(30) NOT NULL,
+	phone_num varchar(12) NOT NULL,
+	contact_email varchar(30) NOT NULL,
+	address varchar(60) NOT NULL,
+	company_id int NOT NULL,
+
+CREATE VIEW local_items AS SELECT l.id AS l_id, l.name AS l_name, l.phone_num AS l_phone_num, l.contact_email AS l_contact_email, l.address AS l_address, c.id AS c_id, c.name AS c_name 
+	FROM locals l JOIN companies c ON l.company_id = c.id;
+
 
 GRANT SELECT ON eatter.meal_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.user_items TO 'server'@'localhost';
