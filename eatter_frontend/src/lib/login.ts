@@ -43,7 +43,10 @@ export const create_session = async (event : RequestEvent, email: string, pass: 
     if (resp.status == 200) {
         const res = await resp.json();
         event.cookies.set("token", res.token);
+        return true;
     }
+    
+    return false;
 
 }
 

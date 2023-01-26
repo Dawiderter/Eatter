@@ -1,8 +1,5 @@
 <script>
-	import { invalidateAll } from "$app/navigation";
-
-
-	import Button from "$lib/ui_components/Button.svelte";
+	import { invalidateAll } from "$app/navigation"
 
 </script>
 <form method="post">
@@ -11,17 +8,17 @@
         <input name="email" type="email">
     </div>
     <div>
-        <label for="pass">Hasło</label>
+        <label for="pass">Password</label>
         <input name="pass" type="password">
     </div>
     <div>
-        <label for="nick">Nick</label>
+        <label for="nick">Nickname</label>
         <input name="nick" type="text">
     </div>
     <div>
-        <Button>
-            Zarejestruj
-        </Button>
+        <button class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
+            Register
+        </button>
     </div>
 </form>
 
@@ -37,11 +34,5 @@
         flex-direction: column;
         align-items: center;
         padding: 10px;
-    }
-    input {
-        border-radius: var(--corner-radius);
-        border-style: none;
-        padding: 5px;
-        background-color: var(--color-bg-1);
     }
 </style>

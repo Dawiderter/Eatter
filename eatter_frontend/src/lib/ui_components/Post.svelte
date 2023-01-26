@@ -16,7 +16,7 @@
     <h2 class = "font-raleway text-xs tab-6">{p.r_created_at} &emsp; | &emsp;
     <a href="/local{p.l_id}">{p.l_name}</a> &emsp; | &emsp;
     {stars}</h2>
-    <p class = "p-5 text-l">{p.r_body}</p>
+    <p class = "p-5 text-l font-sans">{p.r_body}</p>
     {#if comments}
     <a class = "font-jetbrains font-bold" href="/post{p.r_id}">Check comments</a>
     {/if}

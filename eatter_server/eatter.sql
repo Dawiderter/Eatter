@@ -8,6 +8,7 @@ GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT, INSERT ON eatter.followers TO 'server'@'localhost';
 GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.mods TO 'server'@'localhost';
@@ -117,9 +118,10 @@ CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_n
 CREATE VIEW user_items AS SELECT u.id AS u_id, u.nick AS u_nick, u.bio AS u_bio FROM users u;
 
 
-GRANT SELECT, INSERT ON eatter.meal_items TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.comment_items TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.feed TO 'server'@'localhost';
+GRANT SELECT ON eatter.meal_items TO 'server'@'localhost';
+GRANT SELECT ON eatter.user_items TO 'server'@'localhost';
+GRANT SELECT ON eatter.comment_items TO 'server'@'localhost';
+GRANT SELECT ON eatter.feed TO 'server'@'localhost';
 
 DROP PROCEDURE createSession;
 DELIMITER //
@@ -173,9 +175,9 @@ DELIMITER ;
 
 DROP PROCEDURE addUser;
 DELIMITER //
-CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass varchar(256))
+CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass_hash varchar(256))
 BEGIN
-    INSERT INTO users(email, nick, pass_hash) VALUES (email, nick, pass);
+    INSERT INTO users(email, nick, pass_hash) VALUES (email, nick, pass_hash);
 END//
 DELIMITER ;
 

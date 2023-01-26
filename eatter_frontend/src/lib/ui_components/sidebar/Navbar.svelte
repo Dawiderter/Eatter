@@ -10,7 +10,7 @@
 		<Icon bind:open={sidebar}/>
 		<Bar/>	
 	</nav>
-	<h1 class="font-mono text-6xl font-bold center">Eatter</h1>
+	<h1 class="font-mono text-6xl font-bold">Eatter</h1>
 	
 	<Menu/>
 </header>
