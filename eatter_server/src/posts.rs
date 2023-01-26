@@ -181,6 +181,59 @@ pub async fn change_bio(
     Ok(StatusCode::OK)
 }
 
+#[derive(Debug, Deserialize)]
+pub struct FollowInput {
+    follow: i32,
+}
+
+pub async fn follow(
+    State(pool): State<MySqlPool>,
+    Query(tok): Query<TokenInput>,
+    Json(body): Json<FollowInput>,
+) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
+    info!("User to follow: {:?}", body);
+
+    let user_id = auth_user(&pool, token).await?.user_id;
+
+    query!(
+        "INSERT INTO followers(follower, followed) VALUES (? , ?)",
+        user_id,
+        body.follow,
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("User followed: {:?} {:?}", user_id, body.follow);
+
+    Ok(StatusCode::OK)
+}
+
+pub async fn unfollow(
+    State(pool): State<MySqlPool>,
+    Query(tok): Query<TokenInput>,
+    Json(body): Json<FollowInput>,
+) -> Result<impl IntoResponse, PostError> {
+    let token = tok.token;
+
+    info!("User to unfollow: {:?}", body);
+
+    let user_id = auth_user(&pool, token).await?.user_id;
+
+    query!(
+        "DELETE FROM followers WHERE followed = ? AND follower = ?",
+        body.follow,
+        user_id,
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("User unfollowed: {:?} {:?}", user_id, body.follow);
+
+    Ok(StatusCode::OK)
+}
+
 impl From<sqlx::Error> for PostError {
     fn from(inner: sqlx::Error) -> Self {
         Self::DataBaseError(inner)

@@ -54,6 +54,8 @@ async fn main() {
         .route("/post/bio", post(posts::change_bio))
         .route("/post/local", post(posts::add_local))
         .route("/post/meal", post(posts::add_meal))
+        .route("/post/follow", post(posts::follow))
+        .route("/post/unfollow", post(posts::unfollow))
         .with_state(state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())

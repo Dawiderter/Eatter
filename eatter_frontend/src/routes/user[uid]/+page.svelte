@@ -9,12 +9,22 @@
 <div>
     <User u={data.item}/>
     {#if data.auth.user_id == data.uid}
-		<form class="w-4/12 input-group z-0" method="post">
+		<form class="w-4/12 input-group z-0" method="post" action="?/bio">
 		    Zmień bio:
 			<ResizableInput name="bio_body" class = "w-8/12" minRows={2} maxRows={5}/>
 			<button>Zamieść</button>
 		</form>
-	{/if}
+	{:else}
+        {#if data.followers.some((u) => u.u_id === data.auth.user_id)}
+            <form class="w-4/12 input-group z-0" method="post" action="?/unfollow">
+                <button>Odobserwuj</button>
+            </form>    
+        {:else}
+            <form class="w-4/12 input-group z-0" method="post" action="?/follow">
+                <button>Obserwuj</button>
+            </form>
+        {/if}
+    {/if}
     <div>
         <h2>Followers:</h2>
         {#each data.followers as u}

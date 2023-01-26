@@ -157,7 +157,7 @@ pub async fn get_user_followed(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, GrabError> {
-    trace!("Followers for user: {:?}", id);
+    trace!("Followed for user: {:?}", id);
 
     let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?)", id)
         .fetch_all(&pool)

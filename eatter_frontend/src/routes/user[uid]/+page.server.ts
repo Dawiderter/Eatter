@@ -1,4 +1,4 @@
-import { change_bio, fetch_user, fetch_user_followed, fetch_user_followers } from '$lib/post';
+import { change_bio, fetch_user, fetch_user_followed, fetch_user_followers, follow, unfollow } from '$lib/post';
 import type { Actions, PageServerLoad } from './$types';
 
 
@@ -15,13 +15,27 @@ export const load = ( async (event) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-    default: async (event) => {
+    bio: async (event) => {
         const data = await event.request.formData();
-
+        
         const body = data.get('bio_body'); 
         
         if (body != null) {
             await change_bio(event, body.valueOf().toString());
         }
-    }   
+    },
+    follow: async (event) => {
+        const uid = event.params.uid; 
+        
+        if (uid != null) {
+            await follow(event, parseInt(uid));
+        }
+    },
+    unfollow: async (event) => {
+        const uid = event.params.uid; 
+        
+        if (uid != null) {
+            await unfollow(event, parseInt(uid));
+        }
+    } 
 } satisfies Actions ;
