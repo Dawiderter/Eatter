@@ -51,3 +51,4 @@
 	.open {
 		left: 0
 	}
+</style>
