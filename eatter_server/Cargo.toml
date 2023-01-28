@@ -12,6 +12,7 @@ opt-level = 3
 argon2 = {version = "0.4.1", features = ["password-hash"]}
 async-trait = "0.1.61"
 axum = {version = "0.6.2", features = ["macros", "query"]}
+axum-extra = {version = "0.4.2", features = ["cookie-private"]}
 clap = {version = "4.1.1", features = ["derive"]}
 dotenvy = "0.15.6"
 rust_decimal = "1.28.0"
@@ -21,6 +22,6 @@ sqlx = {version = "0.6.2", features = ["runtime-tokio-rustls", "mysql", "time", 
 time = {version = "0.3.17", features = ["serde"]}
 tokio = {version = "1.24.1", features = ["full"]}
 tower = {version = "0.4.13", features = ["util"]}
-tower-http = {version = "0.3.5", features = ["fs", "trace", "cors"]}
+tower-http = {version = "0.3.5", features = ["trace"]}
 tracing = "0.1.37"
 tracing-subscriber = {version = "0.3.16", features = ["env-filter"]}

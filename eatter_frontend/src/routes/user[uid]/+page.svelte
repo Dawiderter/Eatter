@@ -27,12 +27,16 @@
     {/if}
     <div>
         <h2 class = "mt-[10px] mb-[10px] text-2xl font-raleway">Followers:</h2>
-        {#each data.followers as u}
-            u.u_nick
-        {/each}
+        <ul>
+            {#each data.followers as u}
+                <li><a href="/user{u.u_id}">{u.u_nick}</a></li>
+            {/each}
+        </ul>
         <h2 class = "mt-[10px] mb-[10px] text-2xl font-raleway">Followed:</h2>
-        {#each data.followed as u}
-            u.u_nick
-        {/each}
+        <ul>
+            {#each data.followed as u}
+                <li><a href="/user{u.u_id}">{u.u_nick}</a></li>
+            {/each}
+        </ul>
     </div>
 </div>
