@@ -2,13 +2,13 @@ use argon2::Argon2;
 use axum::{
     extract::FromRef,
     routing::{get, post, delete},
-    Router,
+    Router, http::{StatusCode, Request}, body::Body,
 };
 use clap::Parser;
 use eatter_server::{login, gets, search, posts};
 
-use sqlx::{Pool, mysql::{MySqlPoolOptions, MySqlConnectOptions}, MySqlPool};
-use tracing::info;
+use sqlx::{mysql::{MySqlPoolOptions, MySqlConnectOptions}, MySqlPool};
+use tracing::{info, warn};
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Clone, FromRef)]
@@ -58,6 +58,10 @@ async fn main() {
         .route("/post/meal", post(posts::add_meal))
         .route("/post/follow", post(posts::follow))
         .route("/post/unfollow", post(posts::unfollow))
+        .fallback(|request : Request<Body>| async move {
+            warn!("Route not found {:?}", request);
+            StatusCode::NOT_FOUND
+        })
         .with_state(state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())

@@ -12,7 +12,7 @@ opt-level = 3
 argon2 = {version = "0.4.1", features = ["password-hash"]}
 async-trait = "0.1.61"
 axum = {version = "0.6.2", features = ["macros", "query"]}
-axum-extra = {version = "0.4.2", features = ["cookie-private"]}
+axum-extra = {version = "0.4.2", features = ["cookie"]}
 clap = {version = "4.1.1", features = ["derive"]}
 dotenvy = "0.15.6"
 rust_decimal = "1.28.0"
