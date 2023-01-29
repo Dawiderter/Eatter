@@ -3,20 +3,25 @@ use argon2::{
     Argon2, PasswordVerifier,
 };
 use axum::{
-    extract::{Path, State, Query},
+    extract::State,
     http::StatusCode,
     response::IntoResponse,
-    Json,
+    Json, Router, body::Body, routing::{post, get},
 };
+use axum_extra::extract::CookieJar;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{prelude::*, query, MySqlPool, query_as};
-use tracing::{error, info, trace};
+use sqlx::{prelude::*, query, MySqlPool};
+use tracing::{info, trace};
 
-pub enum LoginError {
-    DataBaseError(sqlx::Error),
-    HashingError(argon2::password_hash::Error),
-    AuthError,
+use crate::{state::GlobalState, error::LoginError};
+
+pub fn auth_router() -> Router<GlobalState, Body> {
+    Router::new()
+        .route("/login", post(create_session))
+        .route("/logout", post(drop_session))
+        .route("/register", post(register))
+        .route("/check", get(get_session))
 }
 
 #[derive(Serialize, Debug)]
@@ -26,42 +31,38 @@ pub struct AuthedUser {
     pub mod_id : Option<i32>,
 }
 
-pub async fn auth_user(pool: &MySqlPool, token: String) -> Result<AuthedUser, LoginError> {
-    trace!("Auth: {:?}", token);
+impl AuthedUser {
+    pub async fn from_token(pool: &MySqlPool, token: &str) -> Result<Self, LoginError> {
+        trace!("Auth: {:?}", token);
 
-    let user_id = query!("CALL getUserFromSession( ? )", token)
-        .try_map(|row| row.try_get(0))
-        .fetch_optional(pool)
-        .await?
-        .ok_or(LoginError::AuthError)?;
+        let user_id = query!("CALL getUserFromSession( ? )", token)
+            .try_map(|row| row.try_get(0))
+            .fetch_optional(pool)
+            .await?
+            .ok_or(LoginError::AuthError)?;
 
-    let company_id = query!("SELECT id FROM companies WHERE user_id = ?", user_id)
-        .fetch_optional(pool)
-        .await?
-        .map(|r| r.id);
+        let company_id = query!("SELECT id FROM companies WHERE user_id = ?", user_id)
+            .fetch_optional(pool)
+            .await?
+            .map(|r| r.id);
 
-    let mod_id = query!("SELECT id FROM mods WHERE user_id = ?", user_id)
-        .fetch_optional(pool)
-        .await?
-        .map(|r| r.id);
-        
-    info!("Retrieved id: {:?}, {:?}, {:?}", user_id, company_id, mod_id);
+        let mod_id = query!("SELECT id FROM mods WHERE user_id = ?", user_id)
+            .fetch_optional(pool)
+            .await?
+            .map(|r| r.id);
+            
+        info!("Retrieved id: {:?}, {:?}, {:?}", user_id, company_id, mod_id);
 
-    Ok(AuthedUser { user_id, company_id, mod_id })
-}
+        Ok(AuthedUser { user_id, company_id, mod_id })
+    }
 
-pub async fn auth_local_ownership(pool: &MySqlPool, company_id : i32, local_id: i32) -> Result<(), LoginError> {
-    trace!("Company local ownership auth: {:?}, {:?}", company_id, local_id);
+    pub async fn from_cookie(pool: &MySqlPool, cookies: &CookieJar) -> Result<Self, LoginError> {
+        let cookie = cookies.get("token").ok_or(LoginError::AuthError)?;
 
-    let _company_id = query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.id = ? AND l.id = ?", company_id, local_id)
-        .fetch_optional(pool)
-        .await?
-        .ok_or(LoginError::AuthError)?
-        .id;
+        let user = Self::from_token(pool, cookie.value()).await?;
 
-    info!("Authed local ownership");
-
-    Ok(())
+        Ok(user)
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -148,63 +149,28 @@ pub async fn register(
 
 pub async fn get_session(
     State(pool): State<MySqlPool>,
-    Query(tok): Query<TokenInput>,
+    cookies: CookieJar
 ) -> Result<impl IntoResponse, LoginError> {
     trace!("Getting session");
 
-    let auth = auth_user(&pool, tok.token).await?;
+    let auth = AuthedUser::from_cookie(&pool, &cookies).await?;
 
     Ok(Json(json!(auth)))
 }
 
 pub async fn drop_session(
     State(pool): State<MySqlPool>,
-    Query(tok): Query<TokenInput>,
+    cookies: CookieJar
 ) -> Result<impl IntoResponse, LoginError> {
-    let tok = tok.token;
+    let tok = AuthedUser::from_cookie(&pool, &cookies).await?;
 
-    trace!("Drop session: {}", tok);
+    trace!("Drop session: {:?}", tok);
 
-    query!("CALL removeSession( ? )", tok)
+    query!("CALL removeSession( ? )", tok.user_id)
         .execute(&pool)
         .await?;
 
-    trace!("Dropped session: {}", tok);
+    trace!("Dropped session: {:?}", tok);
 
     Ok(StatusCode::OK)
-}
-
-impl From<sqlx::Error> for LoginError {
-    fn from(inner: sqlx::Error) -> Self {
-        Self::DataBaseError(inner)
-    }
-}
-
-impl From<argon2::password_hash::Error> for LoginError {
-    fn from(inner: argon2::password_hash::Error) -> Self {
-        match inner {
-            argon2::password_hash::Error::Password => Self::AuthError,
-            _ => Self::HashingError(inner),
-        }
-    }
-}
-
-impl IntoResponse for LoginError {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            LoginError::DataBaseError(inner) => {
-                error!("Database error: {:?}", inner);
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            LoginError::HashingError(inner) => {
-                error!("Hashing error: {:?}", inner);
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            LoginError::AuthError => {
-                info!("Unauthorized access");
-                StatusCode::UNAUTHORIZED
-            }
-        }
-        .into_response()
-    }
 }

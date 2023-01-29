@@ -1,4 +1,3 @@
-pub mod gets;
-pub mod login;
-pub mod search;
-pub mod posts;
+pub mod routes;
+pub mod state;
+pub mod error;

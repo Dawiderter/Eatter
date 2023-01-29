@@ -5,17 +5,13 @@ use axum::{
     Router, http::{StatusCode, Request}, body::Body,
 };
 use clap::Parser;
-use eatter_server::{login, gets, search, posts};
+use eatter_server::{routes::{auth::auth_router, review::review_router, meal::meal_router, local::local_router, user::user_router, comment::comment_router}};
+use eatter_server::state::GlobalState;
 
 use sqlx::{mysql::{MySqlPoolOptions, MySqlConnectOptions}, MySqlPool};
-use tracing::{info, warn};
+use tracing::{info, warn, trace};
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
-#[derive(Clone, FromRef)]
-pub struct GlobalState {
-    pub database: MySqlPool,
-    pub hash_fn: Argon2<'static>,
-}
 
 #[tokio::main]
 async fn main() {
@@ -35,31 +31,14 @@ async fn main() {
     let state = GlobalState { database: pool,  hash_fn: Argon2::default()};
 
     let app = Router::new()
-        .route("/login", post(login::create_session))
-        .route("/logout", delete(login::drop_session))
-        .route("/register", post(login::register))
-        .route("/auth", get(login::get_session))
-        .route("/grab/local/:id/meals", get(gets::get_meals_from_local))
-        .route("/grab/local/:id", get(gets::get_local_item))
-        .route("/grab/meal/:id/reviews", get(gets::get_reviews_for_meal))
-        .route("/grab/meal/:id", get(gets::get_meal))
-        .route("/grab/meals", get(gets::search_meals_by_tag))
-        .route("/grab/review/:id", get(gets::get_feed_item))
-        .route("/grab/user/:id", get(gets::get_user_item))
-        .route("/grab/user/:id/followers", get(gets::get_user_followers))
-        .route("/grab/user/:id/followed", get(gets::get_user_followed))
-        .route("/grab/review/:id/comments", get(gets::get_comments_for_review))
-        .route("/grab/feed/global", get(gets::get_global_feed))
-        .route("/grab/feed/personal", get(gets::get_personal_feed))
-        .route("/post/review", post(posts::add_review))
-        .route("/post/comment", post(posts::add_comment))
-        .route("/post/bio", post(posts::change_bio))
-        .route("/post/local", post(posts::add_local))
-        .route("/post/meal", post(posts::add_meal))
-        .route("/post/follow", post(posts::follow))
-        .route("/post/unfollow", post(posts::unfollow))
+        .nest("/auth", auth_router())
+        .nest("/comment", comment_router())
+        .nest("/local" , local_router())
+        .nest("/meal", meal_router())
+        .nest("/review", review_router())
+        .nest("/user", user_router())
         .fallback(|request : Request<Body>| async move {
-            warn!("Route not found {:?}", request);
+            trace!("Request denied: {:?}", request);
             StatusCode::NOT_FOUND
         })
         .with_state(state);
