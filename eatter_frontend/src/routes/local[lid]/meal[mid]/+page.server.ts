@@ -19,7 +19,7 @@ export const actions = {
 
         const body = data.get('review_body');
         console.log(body);
-        const score = data.get('review_score');
+        const score = data.get('rate');
         console.log(score);
         const meal_id = params.mid; 
         console.log(meal_id);
