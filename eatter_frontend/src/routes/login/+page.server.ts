@@ -11,8 +11,10 @@ export const actions = {
 
     if (email != null && pass != null) {
       let tok = await api_post_ret(fetch, "/auth/login", {email : email.valueOf().toString(), pass: pass.valueOf().toString()});
-      cookies.set("token", tok.token);
-      throw redirect(303, "/");
+      if(tok) {
+        cookies.set("token", tok.token);
+        throw redirect(303, "/");
+      }
     }
   }   
 } satisfies Actions ;
