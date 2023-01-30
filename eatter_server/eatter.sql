@@ -156,11 +156,11 @@ GRANT SELECT ON eatter.user_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.comment_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.feed TO 'server'@'localhost';
 
-GRANT SELECT, INSERT ON eatter.meals TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
-GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.meals TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.comments TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.locals TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.reviews TO 'server'@'localhost';
+GRANT SELECT, INSERT, DELETE ON eatter.companies TO 'server'@'localhost';
 GRANT SELECT, INSERT, UPDATE ON eatter.users_ext TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
 GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
