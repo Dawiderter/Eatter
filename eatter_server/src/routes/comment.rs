@@ -1,17 +1,18 @@
 use axum::{extract::{State, Path}, response::IntoResponse, Json, Router, body::Body, routing::{get, post}, http::StatusCode};
 use axum_extra::extract::CookieJar;
+use chrono::{Utc, NaiveDateTime};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{state::GlobalState, error::{ApiError}, routes::auth::AuthedUser};
+use crate::{state::GlobalState, error::ApiError, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 struct CommentItem {
     c_id: i32,
     c_body: String,
-    c_created_at: time::PrimitiveDateTime,
+    c_created_at: NaiveDateTime,
     r_id: i32,
     u_id: i32,
     u_nick: String,
@@ -58,7 +59,7 @@ async fn add_comment(
     query!(
         "INSERT INTO comments(body, created_at, review_id, author_id) VALUES (?, ?, ?, ?)",
         body.body,
-        time::OffsetDateTime::now_utc(),
+        Utc::now(),
         body.review_id,
         user.user_id
     )

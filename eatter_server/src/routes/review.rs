@@ -1,5 +1,6 @@
 use axum::{extract::{State, Path}, response::IntoResponse, Json, Router, body::Body, routing::{get, post}, http::StatusCode};
 use axum_extra::extract::CookieJar;
+use chrono::{Utc, NaiveDateTime};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
@@ -11,7 +12,7 @@ use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
 struct ReviewItem {
     r_id: i32,
     r_body: String,
-    r_created_at: time::PrimitiveDateTime,
+    r_created_at: NaiveDateTime,
     r_score: i32,
     u_id: i32,
     u_nick: String,
@@ -117,7 +118,7 @@ async fn add_review(
     query!(
         "INSERT INTO reviews(body,created_at,score,meal_id,author_id) VALUES (?, ?, ?, ?, ?)",
         body.body,
-        time::OffsetDateTime::now_utc(),
+        Utc::now(),
         body.score,
         body.meal_id,
         user.user_id

@@ -9,6 +9,8 @@ use axum::{
     Json, Router, body::Body, routing::{post, get},
 };
 use axum_extra::extract::CookieJar;
+use chrono::{NaiveDateTime, Utc, Duration};
+use rand::{distributions::{Alphanumeric, DistString}, thread_rng};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{prelude::*, query, MySqlPool};
@@ -35,11 +37,19 @@ impl AuthedUser {
     pub async fn from_token(pool: &MySqlPool, token: &str) -> Result<Self, LoginError> {
         trace!("Auth: {:?}", token);
 
-        let user_id = query!("CALL getUserFromSession( ? )", token)
-            .try_map(|row| row.try_get(0))
+        let (session, user_id, expires_at) : (String, i32, NaiveDateTime) = query!("CALL getSession( ? )", token)
+            .try_map(|row| Ok((row.try_get(0)?, row.try_get(1)?, row.try_get(2)?)))
             .fetch_optional(pool)
             .await?
             .ok_or(LoginError::AuthError)?;
+
+        if expires_at <= Utc::now().naive_utc() {
+            query!("CALL removeSession( ? )", session)
+                .execute(pool)
+                .await?;
+            info!("Session expired: {:?}", session);
+            Err(LoginError::AuthError)?;
+        }
 
         let company_id = query!("SELECT id FROM companies WHERE user_id = ?", user_id)
             .fetch_optional(pool)
@@ -87,8 +97,8 @@ pub async fn create_session(
 
     let mut transaction = pool.begin().await?;
 
-    let hash: String = query!("CALL getPassFromEmail( ? )", body.email)
-        .try_map(|row| row.try_get(0))
+    let (hash, id) : (String, i32) = query!("CALL getUserFromEmail( ? )", body.email)
+        .try_map(|row| Ok((row.try_get(0)?, row.try_get(1)?)))
         .fetch_optional(&mut transaction)
         .await?
         .ok_or(LoginError::AuthError)?;
@@ -97,23 +107,17 @@ pub async fn create_session(
 
     hash_fn.verify_password(body.pass.as_bytes(), &parsed_hash)?;
 
-    let user_id: i32 = query!("CALL getUserIDByEmail( ? )", body.email)
-        .try_map(|row| row.try_get(0))
-        .fetch_optional(&mut transaction)
-        .await?
-        .ok_or(LoginError::AuthError)?;
+    let token = Alphanumeric.sample_string(&mut thread_rng(), 256);
 
-    let session: String = query!("CALL createSession( ? )", user_id)
-        .try_map(|row| row.try_get(0))
-        .fetch_optional(&mut transaction)
-        .await?
-        .ok_or(LoginError::AuthError)?;
+    query!("CALL createSession( ?, ?, ? )", id, token, Utc::now() + Duration::hours(1))
+        .execute(&mut transaction)
+        .await?;
 
     transaction.commit().await?;
 
-    trace!("Session created: {}", session);
+    trace!("Session created: {}", token);
 
-    Ok(Json(json!({ "token": session })))
+    Ok(Json(json!({ "token": token })))
 }
 
 pub async fn register(

@@ -16,6 +16,7 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	session varchar(256) NOT NULL,
 	user_id int NOT NULL,
+	expires_at datetime NOT NULL,
 	PRIMARY KEY (session),
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -133,12 +134,26 @@ GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 DROP PROCEDURE createSession;
 DELIMITER //
-CREATE PROCEDURE createSession(IN user_id int)
+CREATE PROCEDURE createSession(IN user_id int, IN token varchar(256), IN expires_at datetime)
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sessions WHERE sessions.user_id = user_id) THEN
-        INSERT INTO sessions(session, user_id) VALUES (SHA2(user_id,256), user_id);
-    END IF;
-    SELECT sessions.session FROM sessions WHERE sessions.user_id = user_id;
+    INSERT INTO sessions(session, user_id, expires_at) VALUES (token, user_id, expires_at);
+END//
+DELIMITER ;
+
+DELIMITER ;
+DROP PROCEDURE removeSession;
+DELIMITER //
+CREATE PROCEDURE removeSession(IN session varchar(256))
+BEGIN
+    DELETE FROM sessions WHERE sessions.session = session;
+END//
+DELIMITER ;
+
+DROP PROCEDURE getSession;
+DELIMITER //
+CREATE PROCEDURE getSession(IN token varchar(256))
+BEGIN
+    SELECT session, user_id, expires_at FROM sessions WHERE sessions.session = token;
 END//
 DELIMITER ;
 
@@ -150,34 +165,11 @@ BEGIN
 END//
 DELIMITER ;
 
-DROP PROCEDURE removeSessionFromId;
+DROP PROCEDURE getUserFromEmail;
 DELIMITER //
-CREATE PROCEDURE removeSessionFromId(IN user_id int)
+CREATE PROCEDURE getUserFromEmail(IN email varchar(30))
 BEGIN
-    DELETE FROM sessions WHERE sessions.user_id = user_id;
-END//
-DELIMITER ;
-DROP PROCEDURE removeSession;
-DELIMITER //
-CREATE PROCEDURE removeSession(IN session varchar(256))
-BEGIN
-    DELETE FROM sessions WHERE sessions.session = session;
-END//
-DELIMITER ;
-
-DROP PROCEDURE getUserFromSession;
-DELIMITER //
-CREATE PROCEDURE getUserFromSession(IN session varchar(256))
-BEGIN
-    SELECT sessions.user_id FROM sessions WHERE sessions.session = session;
-END//
-DELIMITER ;
-
-DROP PROCEDURE getPassFromEmail;
-DELIMITER //
-CREATE PROCEDURE getPassFromEmail(IN email varchar(30))
-BEGIN
-    SELECT users.pass_hash FROM users WHERE users.email = email;
+    SELECT users.pass_hash, users.id FROM users WHERE users.email = email;
 END//
 DELIMITER ;
 
@@ -189,160 +181,167 @@ BEGIN
 END//
 DELIMITER ;
 
-
-DELIMITER //
-CREATE FUNCTION verifyUser(email varchar(30), pass_hash varchar(256))
-RETURNS int
-BEGIN
-    DECLARE user_id INT DEFAULT -1;
-    SET user_id = (SELECT users.id FROM users WHERE users.email = email AND users.pass_hash = pass_hash);
-    RETURN user_id;
-END//
-DELIMITER ;
-
-DROP PROCEDURE loginUser;
-DELIMITER //
-CREATE PROCEDURE loginUser(IN email varchar(30), IN pass_hash varchar(256))
-BEGIN
-    DECLARE user_id INT;
-    SET user_id = verifyUser(email, pass_hash);
-    IF (user_id > -1) THEN
-        CALL createSession(user_id);
-    END IF;
-END//
-DELIMITER ;
-
-DROP PROCEDURE getUserIDByEmail;
-DELIMITER //
-CREATE PROCEDURE getUserIDByEmail(IN email varchar(30))
-    SELECT users.id FROM users WHERE users.email = email;
-BEGIN
-END//
-DELIMITER ;
-
-DROP PROCEDURE getLocalsForCompany;
-DELIMITER //
-CREATE PROCEDURE getLocalsForCompany(IN user_id int)
-BEGIN
-    DECLARE company_id int;
-    SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
-    SELECT id, name, phone_num, contact_email, address FROM locals WHERE locals.company_id = company_id;
-END//
-DELIMITER ;
-
-DROP PROCEDURE addLocal;
-DELIMITER //
-CREATE PROCEDURE addLocal(IN user_id int, IN name varchar(30), IN phone_num varchar(12), IN contact_email varchar(30), IN address varchar(60))
-BEGIN
-    DECLARE company_id int;
-    SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
-    INSERT INTO locals(name, phone_num, contact_email, address, company_id) VALUES
-    (name, phone_num, contact_email, address, company_id);
-END //
-DELIMITER ;
-
-DROP PROCEDURE addMeal;
-DELIMITER //
-CREATE PROCEDURE addMeal(IN price INT, IN name varchar(30), local_id INT)
-BEGIN
-    INSERT INTO meals(price, name, local_id) VALUES
-        (price, name, local_id);
-END//
-DELIMITER ;
-
-DROP PROCEDURE addCompany;
-DELIMITER //
-CREATE PROCEDURE addCompany(IN email varchar(30), IN nick varchar(15), IN pass varchar(256), IN company_name varchar(30))
-BEGIN
-    DECLARE user_id int;
-    CALL addUser(email, nick, pass);
-    SET user_id = verifyUser(email, pass);
-    INSERT INTO companies(name, user_id) VALUES (name, user_id);
-END//
-DELIMITER ;
+-- DROP PROCEDURE removeSessionFromId;
+-- DELIMITER //
+-- CREATE PROCEDURE removeSessionFromId(IN user_id int)
+-- BEGIN
+--     DELETE FROM sessions WHERE sessions.user_id = user_id;
+-- END//
 
 
-DELIMITER //
-CREATE PROCEDURE getMealsFromLocal(IN local_id INT)
-BEGIN
-    SELECT * FROM meals WHERE meals.local_id = local_id;
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE FUNCTION verifyUser(email varchar(30), pass_hash varchar(256))
+-- RETURNS int
+-- BEGIN
+--     DECLARE user_id INT DEFAULT -1;
+--     SET user_id = (SELECT users.id FROM users WHERE users.email = email AND users.pass_hash = pass_hash);
+--     RETURN user_id;
+-- END//
+-- DELIMITER ;
+
+-- DROP PROCEDURE loginUser;
+-- DELIMITER //
+-- CREATE PROCEDURE loginUser(IN email varchar(30), IN pass_hash varchar(256))
+-- BEGIN
+--     DECLARE user_id INT;
+--     SET user_id = verifyUser(email, pass_hash);
+--     IF (user_id > -1) THEN
+--         CALL createSession(user_id);
+--     END IF;
+-- END//
+-- DELIMITER ;
+
+-- DROP PROCEDURE getUserIDByEmail;
+-- DELIMITER //
+-- CREATE PROCEDURE getUserIDByEmail(IN email varchar(30))
+--     SELECT users.id FROM users WHERE users.email = email;
+-- BEGIN
+-- END//
+-- DELIMITER ;
+
+-- DROP PROCEDURE getLocalsForCompany;
+-- DELIMITER //
+-- CREATE PROCEDURE getLocalsForCompany(IN user_id int)
+-- BEGIN
+--     DECLARE company_id int;
+--     SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
+--     SELECT id, name, phone_num, contact_email, address FROM locals WHERE locals.company_id = company_id;
+-- END//
+-- DELIMITER ;
+
+-- DROP PROCEDURE addLocal;
+-- DELIMITER //
+-- CREATE PROCEDURE addLocal(IN user_id int, IN name varchar(30), IN phone_num varchar(12), IN contact_email varchar(30), IN address varchar(60))
+-- BEGIN
+--     DECLARE company_id int;
+--     SET company_id = (SELECT id FROM companies WHERE companies.user_id = user_id);
+--     INSERT INTO locals(name, phone_num, contact_email, address, company_id) VALUES
+--     (name, phone_num, contact_email, address, company_id);
+-- END //
+-- DELIMITER ;
+
+-- DROP PROCEDURE addMeal;
+-- DELIMITER //
+-- CREATE PROCEDURE addMeal(IN price INT, IN name varchar(30), local_id INT)
+-- BEGIN
+--     INSERT INTO meals(price, name, local_id) VALUES
+--         (price, name, local_id);
+-- END//
+-- DELIMITER ;
+
+-- DROP PROCEDURE addCompany;
+-- DELIMITER //
+-- CREATE PROCEDURE addCompany(IN email varchar(30), IN nick varchar(15), IN pass varchar(256), IN company_name varchar(30))
+-- BEGIN
+--     DECLARE user_id int;
+--     CALL addUser(email, nick, pass);
+--     SET user_id = verifyUser(email, pass);
+--     INSERT INTO companies(name, user_id) VALUES (name, user_id);
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE PROCEDURE getLocals()
-BEGIN
-    SELECT * FROM locals;
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE getMealsFromLocal(IN local_id INT)
+-- BEGIN
+--     SELECT * FROM meals WHERE meals.local_id = local_id;
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE PROCEDURE addReview(IN body varchar(300), IN score INT, IN meal_id INT, IN author_id INT)
-BEGIN
-    DECLARE currdate datetime;
-    SET currdate = NOW();
-    INSERT INTO reviews(body, created_at, score, meal_id, author_id) VALUES
-        (body, currdate, score, meal_id, author_id);
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE getLocals()
+-- BEGIN
+--     SELECT * FROM locals;
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE PROCEDURE getReviewsForMeal(IN meal_id INT)
-BEGIN
-    SELECT * FROM reviews WHERE reviews.meal_id = meal_id;
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE addReview(IN body varchar(300), IN score INT, IN meal_id INT, IN author_id INT)
+-- BEGIN
+--     DECLARE currdate datetime;
+--     SET currdate = NOW();
+--     INSERT INTO reviews(body, created_at, score, meal_id, author_id) VALUES
+--         (body, currdate, score, meal_id, author_id);
+-- END//
+-- DELIMITER ;
 
 
-DROP PROCEDURE getGlobalFeed;
-DELIMITER //
-CREATE PROCEDURE getGlobalFeed()
-BEGIN
-	SELECT COUNT(c.id) AS comm_num, r.*, m.*, l.name as l_name FROM reviews r 
-	JOIN meals m ON r.meal_id = m.id 
-	JOIN locals l ON m.local_id = l.id 
-	LEFT JOIN comments c ON c.review_id = r.id
-	GROUP BY r.id; 
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE getReviewsForMeal(IN meal_id INT)
+-- BEGIN
+--     SELECT * FROM reviews WHERE reviews.meal_id = meal_id;
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE PROCEDURE addComment(IN body varchar(150), IN review_id INT, IN author_id INT)
-BEGIN
-    DECLARE currdate datetime;
-    SET currdate = NOW();
-    INSERT INTO comments(body, created_at, review_id, author_id) VALUES
-        (body, currdate, review_id, author_id);
-END//
+-- DROP PROCEDURE getGlobalFeed;
+-- DELIMITER //
+-- CREATE PROCEDURE getGlobalFeed()
+-- BEGIN
+-- 	SELECT COUNT(c.id) AS comm_num, r.*, m.*, l.name as l_name FROM reviews r 
+-- 	JOIN meals m ON r.meal_id = m.id 
+-- 	JOIN locals l ON m.local_id = l.id 
+-- 	LEFT JOIN comments c ON c.review_id = r.id
+-- 	GROUP BY r.id; 
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE PROCEDURE getPost(IN review_id INT)
-BEGIN
-    SELECT * FROM reviews WHERE reviews.id = review_id;
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE addComment(IN body varchar(150), IN review_id INT, IN author_id INT)
+-- BEGIN
+--     DECLARE currdate datetime;
+--     SET currdate = NOW();
+--     INSERT INTO comments(body, created_at, review_id, author_id) VALUES
+--         (body, currdate, review_id, author_id);
+-- END//
 
 
-DELIMITER //
-CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
-BEGIN
-	DECLARE tag_id INT;
-	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
-	INSERT INTO tags(name) VALUES (name);
-	END IF;
-	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
-	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE getPost(IN review_id INT)
+-- BEGIN
+--     SELECT * FROM reviews WHERE reviews.id = review_id;
+-- END//
+-- DELIMITER ;
 
 
-DELIMITER //
-CREATE TRIGGER check_user_data_ins BEFORE INSERT ON users FOR EACH getReviewsForMeal
-BEGIN
-END//
-DELIMITER ;
+-- DELIMITER //
+-- CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
+-- BEGIN
+-- 	DECLARE tag_id INT;
+-- 	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
+-- 	INSERT INTO tags(name) VALUES (name);
+-- 	END IF;
+-- 	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
+-- 	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
+-- END//
+-- DELIMITER ;
+
+
+-- DELIMITER //
+-- CREATE TRIGGER check_user_data_ins BEFORE INSERT ON users FOR EACH getReviewsForMeal
+-- BEGIN
+-- END//
+-- DELIMITER ;

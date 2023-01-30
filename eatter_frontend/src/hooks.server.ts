@@ -3,7 +3,13 @@ import type { Handle, HandleFetch } from "@sveltejs/kit";
 
 export const handle : Handle = async ({event, resolve}) => {
 
-    event.locals.auth = await api_get(event.fetch, "/auth/check");
+    let auth = await api_get(event.fetch, "/auth/check");
+
+    if (auth == null) {
+        event.cookies.delete("token");
+    }
+
+    event.locals.auth = auth;
 
     console.log(event.locals.auth);
 
