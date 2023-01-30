@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let p : {r_id : number, r_body: string, r_created_at: Date, r_score: number, u_id : number, u_nick : string, m_id: number, m_name: number, l_id: number, l_name: string};
+    export let p : {r_id : number, r_body: string, r_created_at: Date, r_score: number, u_id : number, u_nick : string, m_id: number, m_name: number, l_id: number, l_name: string, r_c_num: number};
 
     export let comments = true;
 
@@ -20,6 +20,6 @@
     {stars}</h2>
     <p class = "p-5 text-l font-sans">{p.r_body}</p>
     {#if comments}
-    <a class = "font-jetbrains font-bold" href="/post{p.r_id}">Check comments</a>
+    <a class = "font-jetbrains font-bold" href="/post{p.r_id}">Check comments ({p.r_c_num})</a>
     {/if}
 </div>

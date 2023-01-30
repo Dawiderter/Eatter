@@ -35,11 +35,18 @@ pub struct MealInput {
     local_id: i32,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct TagInput {
+    meal_id: i32,
+    tag_name: String,
+}
+
 pub fn meal_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_meal))
         .route("/:id", get(get_meal))
         .route("/local/:id", get(get_meals_from_local))
+        .route("/tag", post(add_tag))
 }
 
 async fn get_meal(
@@ -96,6 +103,40 @@ async fn add_meal(
     .await?;
 
     info!("Meal added: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
+async fn add_tag(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Json(body): Json<TagInput>,
+) -> Result<impl IntoResponse, ApiError> { 
+    trace!("Tag to add: {:?}", body);
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id JOIN meals m ON l.id = m.local_id WHERE c.id = ? AND m.id = ?",
+        company_id, 
+        body.meal_id
+    )
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "CALL addTagForMeal(?, ?)",
+        body.tag_name,
+        body.meal_id
+    )
+        .execute(&pool)
+        .await?;
+
+    info!("Tag added: {:?}", body);
 
     Ok(StatusCode::OK)
 }

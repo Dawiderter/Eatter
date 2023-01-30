@@ -14,6 +14,7 @@ pub struct ReviewItem {
     r_body: String,
     r_created_at: NaiveDateTime,
     r_score: u32,
+    r_c_num: i32,
     u_id: i32,
     u_nick: String,
     m_id: i32,

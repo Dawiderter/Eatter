@@ -16,7 +16,7 @@ CREATE TABLE users_ext (
 	nick varchar(15) NOT NULL,
 	bio varchar(200),
 	PRIMARY KEY (id),
-	FOREIGN KEY (id) REFERENCES users(id)
+	FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE sessions (
@@ -77,7 +77,7 @@ CREATE TABLE comments (
 	PRIMARY KEY (id),
 	FOREIGN KEY (review_id) REFERENCES reviews(id),
 	FOREIGN KEY (author_id) REFERENCES users(id),
-	CHECK(LENGTH(body) > 30)
+	CHECK(LENGTH(body) > 5)
 );
 
 CREATE TABLE tags (
@@ -96,23 +96,33 @@ CREATE TABLE mods (
 	id int NOT NULL AUTO_INCREMENT, 
 	user_id int NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id)
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE followers (
 	follower int NOT NULL, 
 	followed int NOT NULL, 
 	PRIMARY KEY (follower, followed),
-	FOREIGN KEY (follower) REFERENCES users(id),
-	FOREIGN KEY (followed) REFERENCES users(id),
+	FOREIGN KEY (follower) REFERENCES users(id) ON DELETE CASCADE,
+	FOREIGN KEY (followed) REFERENCES users(id) ON DELETE CASCADE,
 	CHECK(follower <> followed)
 );
 
 CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, ue.nick AS u_nick 
 	FROM comments c JOIN users u ON u.id = c.author_id JOIN users_ext ue ON ue.id = u.id;  
 
-CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, u.id AS u_id, ue.nick AS u_nick, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
-	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id JOIN users u ON u.id = r.author_id JOIN users_ext ue ON ue.id = u.id;
+CREATE VIEW feed AS SELECT 
+	r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, 
+	u.id AS u_id, ue.nick AS u_nick, 
+	m.id AS m_id, m.name AS m_name, 
+	l.id AS l_id, l.name AS l_name, 
+	re.c_num AS r_c_num
+	FROM reviews r 
+	JOIN meals m ON r.meal_id = m.id 
+	JOIN locals l ON m.local_id = l.id 
+	JOIN users u ON u.id = r.author_id 
+	JOIN users_ext ue ON ue.id = u.id
+	JOIN review_ext re ON re.id = r.id;
 
 CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM meals m JOIN locals l ON m.local_id = l.id;
@@ -122,6 +132,20 @@ CREATE VIEW user_items AS SELECT u.id AS u_id, ue.nick AS u_nick, ue.bio AS u_bi
 CREATE VIEW local_items AS SELECT l.id AS l_id, l.name AS l_name, l.phone_num AS l_phone_num, l.contact_email AS l_contact_email, l.address AS l_address, c.id AS c_id, c.name AS c_name 
 	FROM locals l JOIN companies c ON l.company_id = c.id;
 
+CREATE TABLE review_ext(
+	id int NOT NULL,
+	c_num int NOT NULL DEFAULT 0,
+	PRIMARY KEY (id),
+	FOREIGN KEY (id) REFERENCES reviews(id) ON DELETE CASCADE
+);
+
+CREATE TABLE meal_ext(
+	id int NOT NULL,
+	r_num int NOT NULL DEFAULT 0,
+	r_avg int DEFAULT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (id) REFERENCES meals(id) ON DELETE CASCADE
+);
 
 GRANT SELECT ON eatter.meal_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.local_items TO 'server'@'localhost';
@@ -139,6 +163,62 @@ GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
 GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.mods TO 'server'@'localhost';
+
+DROP TRIGGER r_ext_ins;
+DELIMITER //
+CREATE TRIGGER r_ext_ins AFTER INSERT ON reviews 
+FOR EACH ROW
+BEGIN
+	INSERT INTO review_ext(id) VALUES (NEW.id);
+END//
+DELIMITER ;
+
+DROP TRIGGER r_ext_upd;
+DELIMITER //
+CREATE TRIGGER r_ext_upd AFTER INSERT ON comments 
+FOR EACH ROW
+BEGIN
+	UPDATE review_ext SET c_num = (SELECT COUNT(id) FROM comments WHERE review_id = NEW.review_id) WHERE id = NEW.review_id;
+END//
+DELIMITER ;
+
+
+DROP TRIGGER r_ext_del;
+DELIMITER //
+CREATE TRIGGER r_ext_del AFTER DELETE ON comments 
+FOR EACH ROW
+BEGIN
+	UPDATE review_ext SET c_num = (SELECT COUNT(id) FROM comments WHERE review_id = OLD.review_id) WHERE id = OLD.review_id;
+END//
+DELIMITER ;
+
+DROP TRIGGER m_ext_ins;
+DELIMITER //
+CREATE TRIGGER m_ext_ins AFTER INSERT ON meals 
+FOR EACH ROW
+BEGIN
+	INSERT INTO meal_ext(id) VALUES (NEW.id);
+END//
+DELIMITER ;
+
+DROP TRIGGER m_ext_upd;
+DELIMITER //
+CREATE TRIGGER m_ext_upd AFTER INSERT ON reviews 
+FOR EACH ROW
+BEGIN
+	UPDATE meal_ext SET r_num = (SELECT COUNT(id) FROM comments WHERE review_id = NEW.review_id) WHERE id = NEW.review_id;
+END//
+DELIMITER ;
+
+
+DROP TRIGGER m_ext_del;
+DELIMITER //
+CREATE TRIGGER m_ext_del AFTER DELETE ON reviews 
+FOR EACH ROW
+BEGIN
+	UPDATE meal_ext SET c_num = (SELECT COUNT(id) FROM comments WHERE review_id = OLD.review_id) WHERE id = OLD.review_id;
+END//
+DELIMITER ;
 
 DROP PROCEDURE createSession;
 DELIMITER //
@@ -187,6 +267,19 @@ CREATE PROCEDURE addUser(IN email varchar(30), IN pass_hash varchar(256))
 BEGIN
     INSERT INTO users(email, pass_hash) VALUES (email, pass_hash);
 	SELECT id FROM users u WHERE u.email = email AND u.pass_hash = pass_hash;
+END//
+DELIMITER ;
+
+DROP PROCEDURE addTagForMeal;
+DELIMITER //
+CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
+BEGIN
+	DECLARE tag_id INT;
+	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
+	INSERT INTO tags(name) VALUES (tag_name);
+	END IF;
+	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
+	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
 END//
 DELIMITER ;
 
@@ -336,17 +429,7 @@ DELIMITER ;
 -- DELIMITER ;
 
 
--- DELIMITER //
--- CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
--- BEGIN
--- 	DECLARE tag_id INT;
--- 	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
--- 	INSERT INTO tags(name) VALUES (name);
--- 	END IF;
--- 	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
--- 	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
--- END//
--- DELIMITER ;
+
 
 
 -- DELIMITER //

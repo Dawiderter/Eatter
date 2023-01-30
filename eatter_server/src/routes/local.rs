@@ -31,6 +31,7 @@ pub fn local_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_local))
         .route("/:id", get(get_local))
+        .route("/my", get(get_locals))
 }
 
 async fn get_local(
@@ -40,6 +41,25 @@ async fn get_local(
     trace!("Local: {:?}", id);
 
     let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE l_id = ?", id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(ApiError::NoItem)?;
+
+    Ok(Json(json!(res)))
+}
+
+async fn get_locals(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Company locals");
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE c_id = ?", company_id)
         .fetch_optional(&pool)
         .await?
         .ok_or(ApiError::NoItem)?;
