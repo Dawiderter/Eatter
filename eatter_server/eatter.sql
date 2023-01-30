@@ -156,9 +156,9 @@ GRANT SELECT ON eatter.user_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.comment_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.feed TO 'server'@'localhost';
 
-GRANT SELECT, INSERT, DELETE ON eatter.meals TO 'server'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON eatter.meals TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.comments TO 'server'@'localhost';
-GRANT SELECT, INSERT, DELETE ON eatter.locals TO 'server'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON eatter.locals TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.companies TO 'server'@'localhost';
 GRANT SELECT, INSERT, UPDATE ON eatter.users_ext TO 'server'@'localhost';

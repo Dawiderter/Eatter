@@ -46,7 +46,7 @@ pub struct TagInput {
 pub fn meal_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_meal))
-        .route("/:id", get(get_meal))
+        .route("/:id", get(get_meal).delete(del_meal).patch(patch_meal))
         .route("/local/:id", get(get_meals_from_local))
         .route("/tag", post(add_tag))
 }
@@ -139,6 +139,74 @@ async fn add_tag(
         .await?;
 
     info!("Tag added: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
+async fn del_meal(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Meal to del: {:?}", id);
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id JOIN meals m ON l.id = m.local_id WHERE c.id = ? AND m.id = ?",
+        company_id, 
+        id
+    )
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "DELETE FROM meals WHERE id = ?", id
+    )
+        .execute(&pool)
+        .await?;
+
+    info!("Meal deleted: {:?}", id);
+
+    Ok(StatusCode::OK)
+}
+
+async fn patch_meal(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+    Json(body): Json<MealInput>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Local to patch: {:?}", id);
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id JOIN meals m ON l.id = m.local_id WHERE c.id = ? AND m.id = ?",
+        company_id, 
+        id
+    )
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "UPDATE meals SET price = ?, name = ? WHERE id = ?",
+        body.price,
+        body.name,
+        id
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Local patched: {:?}", id);
 
     Ok(StatusCode::OK)
 }
