@@ -32,7 +32,7 @@ CREATE TABLE companies (
 	name varchar(30) NOT NULL UNIQUE,
 	user_id int UNIQUE,
 	PRIMARY KEY (id),
-	FOREIGN KEY (user_id) REFERENCES users(id)
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE locals (
@@ -43,7 +43,7 @@ CREATE TABLE locals (
 	address varchar(60) NOT NULL,
 	company_id int NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (company_id) REFERENCES companies(id)
+	FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 ); 
 
 CREATE TABLE meals (
@@ -52,7 +52,7 @@ CREATE TABLE meals (
 	name varchar(30) NOT NULL, 
 	local_id int NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (local_id) REFERENCES locals(id)
+	FOREIGN KEY (local_id) REFERENCES locals(id) ON DELETE CASCADE
 );
 
 CREATE TABLE reviews (
@@ -63,8 +63,8 @@ CREATE TABLE reviews (
 	meal_id int NOT NULL, 
 	author_id int NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (meal_id) REFERENCES meals(id),
-	FOREIGN KEY (author_id) REFERENCES users(id),
+	FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE,
+	FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
 	CHECK(score>0 AND score<6)
 );
 
@@ -75,8 +75,8 @@ CREATE TABLE comments (
 	review_id int NOT NULL, 
 	author_id int NOT NULL,
 	PRIMARY KEY (id),
-	FOREIGN KEY (review_id) REFERENCES reviews(id),
-	FOREIGN KEY (author_id) REFERENCES users(id),
+	FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+	FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
 	CHECK(LENGTH(body) > 5)
 );
 
@@ -108,6 +108,21 @@ CREATE TABLE followers (
 	CHECK(follower <> followed)
 );
 
+CREATE TABLE review_ext(
+	id int NOT NULL,
+	c_num int NOT NULL DEFAULT 0,
+	PRIMARY KEY (id),
+	FOREIGN KEY (id) REFERENCES reviews(id) ON DELETE CASCADE
+);
+
+CREATE TABLE meal_ext(
+	id int NOT NULL,
+	r_num int NOT NULL DEFAULT 0,
+	r_avg decimal(3,2) DEFAULT NULL,
+	PRIMARY KEY (id),
+	FOREIGN KEY (id) REFERENCES meals(id) ON DELETE CASCADE
+);
+
 CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, ue.nick AS u_nick 
 	FROM comments c JOIN users u ON u.id = c.author_id JOIN users_ext ue ON ue.id = u.id;  
 
@@ -134,21 +149,6 @@ CREATE VIEW user_items AS SELECT u.id AS u_id, ue.nick AS u_nick, ue.bio AS u_bi
 
 CREATE VIEW local_items AS SELECT l.id AS l_id, l.name AS l_name, l.phone_num AS l_phone_num, l.contact_email AS l_contact_email, l.address AS l_address, c.id AS c_id, c.name AS c_name 
 	FROM locals l JOIN companies c ON l.company_id = c.id;
-
-CREATE TABLE review_ext(
-	id int NOT NULL,
-	c_num int NOT NULL DEFAULT 0,
-	PRIMARY KEY (id),
-	FOREIGN KEY (id) REFERENCES reviews(id) ON DELETE CASCADE
-);
-
-CREATE TABLE meal_ext(
-	id int NOT NULL,
-	r_num int NOT NULL DEFAULT 0,
-	r_avg decimal(3,2) DEFAULT NULL,
-	PRIMARY KEY (id),
-	FOREIGN KEY (id) REFERENCES meals(id) ON DELETE CASCADE
-);
 
 GRANT SELECT ON eatter.meal_items TO 'server'@'localhost';
 GRANT SELECT ON eatter.local_items TO 'server'@'localhost';
