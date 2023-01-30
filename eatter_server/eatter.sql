@@ -124,8 +124,11 @@ CREATE VIEW feed AS SELECT
 	JOIN users_ext ue ON ue.id = u.id
 	JOIN review_ext re ON re.id = r.id;
 
-CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_name, l.id AS l_id, l.name AS l_name 
-	FROM meals m JOIN locals l ON m.local_id = l.id;
+CREATE VIEW meal_items AS SELECT 
+	m.id AS m_id, m.price AS m_price, m.name AS m_name, 
+	l.id AS l_id, l.name AS l_name,
+	me.r_num AS m_r_num, me.r_avg AS m_r_avg
+	FROM meals m JOIN locals l ON m.local_id = l.id JOIN meal_ext me ON me.id = m.id;
 
 CREATE VIEW user_items AS SELECT u.id AS u_id, ue.nick AS u_nick, ue.bio AS u_bio FROM users u JOIN users_ext ue ON ue.id = u.id;
 
@@ -142,7 +145,7 @@ CREATE TABLE review_ext(
 CREATE TABLE meal_ext(
 	id int NOT NULL,
 	r_num int NOT NULL DEFAULT 0,
-	r_avg int DEFAULT NULL,
+	r_avg decimal(3,2) DEFAULT NULL,
 	PRIMARY KEY (id),
 	FOREIGN KEY (id) REFERENCES meals(id) ON DELETE CASCADE
 );
@@ -206,7 +209,8 @@ DELIMITER //
 CREATE TRIGGER m_ext_upd AFTER INSERT ON reviews 
 FOR EACH ROW
 BEGIN
-	UPDATE meal_ext SET r_num = (SELECT COUNT(id) FROM comments WHERE review_id = NEW.review_id) WHERE id = NEW.review_id;
+	UPDATE meal_ext SET r_num = (SELECT COUNT(id) FROM reviews WHERE meal_id = NEW.meal_id), 
+	r_avg = (SELECT AVG(score) FROM reviews WHERE meal_id = NEW.meal_id) WHERE id = NEW.meal_id;
 END//
 DELIMITER ;
 
@@ -216,7 +220,8 @@ DELIMITER //
 CREATE TRIGGER m_ext_del AFTER DELETE ON reviews 
 FOR EACH ROW
 BEGIN
-	UPDATE meal_ext SET c_num = (SELECT COUNT(id) FROM comments WHERE review_id = OLD.review_id) WHERE id = OLD.review_id;
+	UPDATE meal_ext SET r_num = (SELECT COUNT(id) FROM reviews WHERE meal_id = OLD.meal_id), 
+	r_avg = (SELECT AVG(score) FROM reviews WHERE meal_id = OLD.meal_id) WHERE id = OLD.meal_id;
 END//
 DELIMITER ;
 
