@@ -9,7 +9,7 @@ export const load = (async ({fetch, params, locals}) => {
         });
     }
 
-    const my_locals =  await api_get(fetch, "/local/my/");
+    const my_locals =  await api_get(fetch, "/local/my");
     return {
         locals: my_locals,
     }
