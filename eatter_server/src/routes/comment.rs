@@ -1,4 +1,4 @@
-use axum::{extract::{State, Path}, response::IntoResponse, Json, Router, body::Body, routing::{get, post}, http::StatusCode};
+use axum::{extract::{State, Path}, response::IntoResponse, Json, Router, body::Body, routing::{get, post, delete}, http::StatusCode};
 use axum_extra::extract::CookieJar;
 use chrono::{Utc, NaiveDateTime};
 use serde::{Serialize, Deserialize};
@@ -6,7 +6,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{state::GlobalState, error::ApiError, routes::auth::AuthedUser};
+use crate::{state::GlobalState, error::{ApiError, LoginError}, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct CommentItem {
@@ -27,6 +27,7 @@ pub struct CommentInput {
 pub fn comment_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_comment))
+        .route("/:id", delete(del_comment))
         .route("/review/:id", get(get_comments_for_review))
 }
 
@@ -67,6 +68,29 @@ async fn add_comment(
     .await?;
 
     info!("Comment added: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
+async fn del_comment(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Comment to del: {:?}", id);
+
+    let _mod = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .mod_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "DELETE FROM comments WHERE id = ?", id
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Comment deleted: {:?}", id);
 
     Ok(StatusCode::OK)
 }

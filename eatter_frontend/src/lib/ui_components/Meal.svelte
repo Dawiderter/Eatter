@@ -3,7 +3,7 @@
 
     export let selected = false;
     
-    let stars = meal_item.m_r_avg == null ? "?" : "★".repeat(meal_item.m_r_avg) + (meal_item.m_r_avg % 1 >= 0.5 ? "⯨" : "");
+    let stars = meal_item.m_r_avg == null ? "?" : "★".repeat(meal_item.m_r_avg) + (meal_item.m_r_avg % 1 >= 0.5 ? "☆" : "");
 
 </script>
 

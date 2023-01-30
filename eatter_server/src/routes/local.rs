@@ -94,3 +94,26 @@ async fn add_local(
 
     Ok(StatusCode::OK)
 }
+
+async fn del_local(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Comment to del: {:?}", id);
+
+    let _mod = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .mod_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "DELETE FROM comments WHERE id = ?", id
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Comment deleted: {:?}", id);
+
+    Ok(StatusCode::OK)
+}
