@@ -60,9 +60,8 @@ async fn get_locals(
         .ok_or(LoginError::AuthError)?;
 
     let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE c_id = ?", company_id)
-        .fetch_optional(&pool)
-        .await?
-        .ok_or(ApiError::NoItem)?;
+        .fetch_all(&pool)
+        .await?;
 
     Ok(Json(json!(res)))
 }

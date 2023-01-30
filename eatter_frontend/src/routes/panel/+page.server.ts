@@ -8,4 +8,9 @@ export const load = (async ({fetch, params, locals}) => {
             message: 'Not permitted'
         });
     }
+
+    const my_locals =  await api_get(fetch, "/local/my/");
+    return {
+        locals: my_locals,
+    }
 }) satisfies PageServerLoad;
