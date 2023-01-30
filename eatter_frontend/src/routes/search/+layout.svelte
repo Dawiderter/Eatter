@@ -1,8 +1,8 @@
 <script lang="ts">
     let input_tag = "";
     let tags : string[];
-    tags = ['spaghetti', 'bolognese'];
-    $: formatted_tags = tags.join(',')
+    tags = [];
+    $: formatted_tags = tags.map(encodeURIComponent).join(',')
     const onclickfunc = () => {
         tags.push(input_tag);
         input_tag = "";
@@ -24,7 +24,7 @@
     <a href = '/search/results?tags={formatted_tags}' class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
         Search
     </a>
-    <h1 class = "mt-[15px] text-xl font-raleway">Current tags</h1>
+    <h1 class = "mt-[15px] text-xl font-raleway">Current tags:</h1>
     <ul class = "p-1 flex flex-col items-center justify-center">
         {#each tags as tag, i (i)}
             <li class = "mt-[5px] rounded-lg bg-gray-200 border-r-2 shadow-sg w-fit p-1">
@@ -38,6 +38,7 @@
             </li>
         {/each}
     </ul>
+    <h1 class = "mt-[15px] text-xl font-raleway">Meals:</h1>
     <slot></slot>
 </div>
 
