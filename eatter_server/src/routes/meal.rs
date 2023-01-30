@@ -26,6 +26,8 @@ pub struct MealItem {
     m_name: String,
     l_id: i32,
     l_name: String,
+    m_r_num: i32,
+    m_r_avg: Option<Decimal>,
 }
 
 #[derive(Deserialize, Debug)]

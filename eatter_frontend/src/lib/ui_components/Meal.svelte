@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let meal_item : {m_id: number, m_price: number, m_name: string, l_id: number, l_name: number};
+    export let meal_item : {m_id: number, m_price: number, m_name: string, l_id: number, l_name: number, m_r_num: number, m_r_avg: number};
 
     export let selected = false;
 
