@@ -64,6 +64,8 @@ fn map_sort(sort: Option<&str>) -> &'static str {
     match sort {
         Some("name") => "m_name",
         Some("price") => "m_price",
+        Some("avg") => "m_r_avg",
+        Some("num") => "m_r_num",
         _ => "m_name"
     }
 }

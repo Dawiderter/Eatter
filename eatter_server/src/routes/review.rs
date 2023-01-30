@@ -6,7 +6,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
+use crate::{error::{ApiError, LoginError}, state::GlobalState, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct ReviewItem {
@@ -34,7 +34,7 @@ pub fn review_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_review))
         .route("/all", get(get_reviews))
-        .route("/:id", get(get_review))
+        .route("/:id", get(get_review).delete(del_review))
         .route("/meal/:id", get(get_reviews_for_meal))
         .route("/followed", get(get_reviews_of_followed))
         .route("/user/:id", get(get_reviews_from_user))
@@ -128,6 +128,29 @@ async fn add_review(
     .await?;
 
     info!("Review added: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
+async fn del_review(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Review to del: {:?}", id);
+
+    let _mod = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .mod_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "DELETE FROM reviews WHERE id = ?", id
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Review deleted: {:?}", id);
 
     Ok(StatusCode::OK)
 }

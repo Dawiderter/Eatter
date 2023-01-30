@@ -1,11 +1,22 @@
-use axum::{extract::{State, Path}, response::IntoResponse, Json, Router, body::Body, routing::{get, post}, http::StatusCode};
+use axum::{
+    body::Body,
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
+};
 use axum_extra::extract::CookieJar;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{FromRow, MySqlPool, query_as, query};
-use tracing::{trace, info};
+use sqlx::{query, query_as, FromRow, MySqlPool};
+use tracing::{info, trace};
 
-use crate::{state::GlobalState, error::{ApiError, LoginError}, routes::auth::AuthedUser};
+use crate::{
+    error::{ApiError, LoginError},
+    routes::auth::AuthedUser,
+    state::GlobalState,
+};
 
 #[derive(Serialize, Debug, FromRow)]
 pub struct LocalItem {
@@ -26,11 +37,10 @@ pub struct LocalInput {
     address: String,
 }
 
-
 pub fn local_router() -> Router<GlobalState, Body> {
     Router::new()
         .route("/", post(add_local))
-        .route("/:id", get(get_local))
+        .route("/:id", get(get_local).delete(del_local).patch(patch_local))
         .route("/my", get(get_locals))
 }
 
@@ -59,9 +69,13 @@ async fn get_locals(
         .company_id
         .ok_or(LoginError::AuthError)?;
 
-    let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE c_id = ?", company_id)
-        .fetch_all(&pool)
-        .await?;
+    let res = query_as!(
+        LocalItem,
+        "SELECT * FROM local_items WHERE c_id = ?",
+        company_id
+    )
+    .fetch_all(&pool)
+    .await?;
 
     Ok(Json(json!(res)))
 }
@@ -90,6 +104,66 @@ async fn add_local(
     .await?;
 
     info!("Local added: {:?}", body);
+
+    Ok(StatusCode::OK)
+}
+
+async fn del_local(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Local to del: {:?}", id);
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.id = ? AND l.id = ?", company_id,id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    query!("DELETE FROM locals WHERE id = ?", id)
+        .execute(&pool)
+        .await?;
+
+    info!("Local deleted: {:?}", id);
+
+    Ok(StatusCode::OK)
+}
+
+async fn patch_local(
+    State(pool): State<MySqlPool>,
+    cookies: CookieJar,
+    Path(id): Path<i32>,
+    Json(body): Json<LocalInput>,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Local to patch: {:?}", id);
+
+    let company_id = AuthedUser::from_cookie(&pool, &cookies)
+        .await?
+        .company_id
+        .ok_or(LoginError::AuthError)?;
+
+    query!("SELECT c.id FROM companies c JOIN locals l ON c.id = l.company_id WHERE c.id = ? AND l.id = ?", company_id,id)
+        .fetch_optional(&pool)
+        .await?
+        .ok_or(LoginError::AuthError)?;
+
+    query!(
+        "UPDATE locals SET name = ?, phone_num = ?, contact_email = ?, address = ? WHERE id = ?",
+        body.name,
+        body.phone_num,
+        body.contact_email,
+        body.address,
+        id
+    )
+    .execute(&pool)
+    .await?;
+
+    info!("Local patched: {:?}", id);
 
     Ok(StatusCode::OK)
 }
