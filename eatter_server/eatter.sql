@@ -6,11 +6,17 @@ GRANT EXECUTE ON eatter.* TO 'server'@'localhost';
 
 CREATE TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
-	email varchar(30) NOT NULL UNIQUE, 
-	nick varchar(15) NOT NULL,
-	bio varchar(200),
+	email varchar(30) NOT NULL UNIQUE,
 	pass_hash varchar(256) NOT NULL,
 	PRIMARY KEY (id)
+);
+
+CREATE TABLE users_ext (
+	id int NOT NULL,
+	nick varchar(15) NOT NULL,
+	bio varchar(200),
+	PRIMARY KEY (id),
+	FOREIGN KEY (id) REFERENCES users(id)
 );
 
 CREATE TABLE sessions (
@@ -102,15 +108,16 @@ CREATE TABLE followers (
 	CHECK(follower <> followed)
 );
 
-CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, u.nick AS u_nick FROM comments c JOIN users u ON u.id = c.author_id;  
+CREATE VIEW comment_items AS SELECT c.id AS c_id, c.body AS c_body, c.created_at AS c_created_at, c.review_id AS r_id, u.id AS u_id, ue.nick AS u_nick 
+	FROM comments c JOIN users u ON u.id = c.author_id JOIN users_ext ue ON ue.id = u.id;  
 
-CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, u.id AS u_id, u.nick AS u_nick, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
-	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id JOIN users u ON u.id = r.author_id;
+CREATE VIEW feed AS SELECT r.id AS r_id, r.body AS r_body, r.created_at AS r_created_at, r.score AS r_score, u.id AS u_id, ue.nick AS u_nick, m.id AS m_id, m.name AS m_name, l.id AS l_id, l.name AS l_name 
+	FROM reviews r JOIN meals m ON r.meal_id = m.id JOIN locals l ON m.local_id = l.id JOIN users u ON u.id = r.author_id JOIN users_ext ue ON ue.id = u.id;
 
 CREATE VIEW meal_items AS SELECT m.id AS m_id, m.price AS m_price, m.name AS m_name, l.id AS l_id, l.name AS l_name 
 	FROM meals m JOIN locals l ON m.local_id = l.id;
 
-CREATE VIEW user_items AS SELECT u.id AS u_id, u.nick AS u_nick, u.bio AS u_bio FROM users u;
+CREATE VIEW user_items AS SELECT u.id AS u_id, ue.nick AS u_nick, ue.bio AS u_bio FROM users u JOIN users_ext ue ON ue.id = u.id;
 
 CREATE VIEW local_items AS SELECT l.id AS l_id, l.name AS l_name, l.phone_num AS l_phone_num, l.contact_email AS l_contact_email, l.address AS l_address, c.id AS c_id, c.name AS c_name 
 	FROM locals l JOIN companies c ON l.company_id = c.id;
@@ -127,6 +134,7 @@ GRANT SELECT, INSERT ON eatter.comments TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.locals TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT ON eatter.companies TO 'server'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON eatter.users_ext TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
 GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.tags TO 'server'@'localhost';
@@ -175,9 +183,10 @@ DELIMITER ;
 
 DROP PROCEDURE addUser;
 DELIMITER //
-CREATE PROCEDURE addUser(IN email varchar(30), IN nick varchar(15), IN pass_hash varchar(256))
+CREATE PROCEDURE addUser(IN email varchar(30), IN pass_hash varchar(256))
 BEGIN
-    INSERT INTO users(email, nick, pass_hash) VALUES (email, nick, pass_hash);
+    INSERT INTO users(email, pass_hash) VALUES (email, pass_hash);
+	SELECT id FROM users u WHERE u.email = email AND u.pass_hash = pass_hash;
 END//
 DELIMITER ;
 
