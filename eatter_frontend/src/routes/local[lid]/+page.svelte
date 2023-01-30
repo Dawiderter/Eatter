@@ -10,11 +10,12 @@
 	{#each data.items as item}
 	<div class = "flex flex-row w-screen  items-center justify-center">
 		{#if data.auth != null && data.auth.company_id != null}
-			<button class="p-5"  on:click={() => {
-					
-			}}>
-				<span class="close">+</span>
-			</button>
+			<form action="?/del" method="post">
+				<input type="hidden" name="meal_id" value="{item.m_id}">
+				<button class="p-5">
+					<span class="close">+</span>
+				</button>
+			</form>
 		{/if}
 			<MealCard 
 				meal_item = {item} 

@@ -9,7 +9,7 @@ import Local from "$lib/ui_components/Local.svelte";
 
 <div class = "pt-10 flex flex-col items-center justify-center ">
     <Local l={data.local}/>
-    <ItemForm action="" fields={[{name: "name", type: "text"}, {name: "price", type: "text"}]}></ItemForm>
+    <ItemForm action="?/add" fields={[{name: "name", type: "text"}, {name: "price", type: "text"}]}></ItemForm>
     <h3 class = "pt-8 text-xl font-raleway">Menu:</h3>
     <slot></slot>
     
