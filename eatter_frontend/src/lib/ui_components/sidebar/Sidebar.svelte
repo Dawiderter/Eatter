@@ -25,12 +25,17 @@
                 <a href="/feed">Global Feed</a>
             </li>
             {#if auth != null}
-                <li>
-                    <a href="/your_feed">Personal Feed</a>
-                </li>
-                <li>
-                    <a href="/user{auth.user_id}">Profile</a>
-                </li>
+            <li>
+                <a href="/your_feed">Personal Feed</a>
+            </li>
+            {#if auth.company_id != null}
+            <li>
+                <a href="/panel">Control Panel</a>
+            </li>
+            {/if}
+            <li>
+                <a href="/user{auth.user_id}">Profile</a>
+            </li>
             {/if}
         </ul>
     </nav>
