@@ -1,6 +1,8 @@
 <script lang="ts">
     let input_tag = "";
     let tags : string[];
+    let sort = "name";
+    let dir = "asc";
     tags = [];
     $: formatted_tags = tags.map(encodeURIComponent).join(',')
     const onAddTag = () => {
@@ -21,7 +23,7 @@
             <button on:click={onAddTag} class="text-white absolute right-1.5 bottom-2.5 bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none font-xs rounded-lg text-sm px-1 py-2 ">Add Tag</button>
         </div>
     </div>
-    <a href = '/search/results?tags={formatted_tags}' class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
+    <a href = '/search/results?tags={formatted_tags}&sort={sort}&dir={dir}' class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
         Search
     </a>
     <h1 class = "mt-[15px] text-xl font-raleway">Current tags:</h1>
@@ -38,6 +40,38 @@
             </li>
         {/each}
     </ul>
+    <div class="flex flex-col items-center">
+        <h1 class = "mt-[15px] text-xl font-raleway">Sort by:</h1>
+        <ul class="flex flex-row gap-10">
+            <li>
+                <label for="s_p">Price</label>
+                <input type="radio" bind:group={sort} value="price">
+            </li>
+            <li>
+                <label for="s_p">Name</label>
+                <input type="radio" bind:group={sort} value="name">
+            </li>
+            <li>
+                <label for="s_p">Number of reviews</label>
+                <input type="radio" bind:group={sort} value="num">
+            </li>
+            <li>
+                <label for="s_p">Average score</label>
+                <input type="radio" bind:group={sort} value="avg">
+            </li>
+        </ul>
+        <h1 class = "mt-[15px] text-xl font-raleway">Order by:</h1>
+        <ul class="flex flex-row gap-10">
+            <li>
+                <label for="s_p">Ascending</label>
+                <input type="radio" bind:group={dir} value="asc">
+            </li>
+            <li>
+                <label for="s_p">Descending</label>
+                <input type="radio" bind:group={dir} value="desc">
+            </li>
+        </ul>
+    </div>
     <h1 class = "mt-[15px] text-xl font-raleway">Meals:</h1>
     <slot></slot>
 </div>
@@ -49,4 +83,5 @@
   display: inline-block;
   transform: rotate(45deg);
 }
+
 </style>
