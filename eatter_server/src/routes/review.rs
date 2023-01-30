@@ -13,7 +13,7 @@ struct ReviewItem {
     r_id: i32,
     r_body: String,
     r_created_at: NaiveDateTime,
-    r_score: i32,
+    r_score: u32,
     u_id: i32,
     u_nick: String,
     m_id: i32,

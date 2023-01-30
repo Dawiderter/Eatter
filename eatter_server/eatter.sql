@@ -71,7 +71,7 @@ CREATE TABLE comments (
 	PRIMARY KEY (id),
 	FOREIGN KEY (review_id) REFERENCES reviews(id),
 	FOREIGN KEY (author_id) REFERENCES users(id),
-	CHECK(LEN(body) > 30)
+	CHECK(LENGTH(body) > 30)
 );
 
 CREATE TABLE tags (
