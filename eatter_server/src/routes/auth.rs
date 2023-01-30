@@ -133,13 +133,22 @@ pub async fn register(
         .hash_password(body.pass.as_bytes(), &salt)?
         .to_string();
 
-    query!("CALL addUser( ?, ?, ? )", body.email, body.nick, hash)
-        .execute(&pool)
+    let mut trans = pool.begin().await?;
+
+    let id : i32 = query!("CALL addUser( ?, ? )", body.email, hash)
+        .try_map(|row| row.try_get(0))
+        .fetch_one(&mut trans)
         .await
         .map_err(|e| {
             info!("During registration: {:?}", e);
             LoginError::AuthError
         })?;
+
+    query!("INSERT INTO users_ext(id, nick) VALUES (?, ?)", id, body.nick)
+        .execute(&mut trans)
+        .await?;
+
+    trans.commit().await?;
 
     trace!("User successfully registered");
 

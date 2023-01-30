@@ -84,9 +84,9 @@ async fn change_bio(
     let user_id = AuthedUser::from_cookie(&pool, &cookies).await?.user_id;
 
     query!(
-        "CALL changeBio (?, ?)",
-        user_id,
-        body.bio
+        "UPDATE users_ext SET bio = ? WHERE id = ?",
+        body.bio,
+        user_id
     )
     .execute(&pool)
     .await?;
