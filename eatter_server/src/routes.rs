@@ -4,3 +4,4 @@ pub mod meal;
 pub mod local;
 pub mod user;
 pub mod comment;
+pub mod search;

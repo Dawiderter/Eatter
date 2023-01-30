@@ -8,7 +8,7 @@ use tracing::{trace, info};
 use crate::{state::GlobalState, error::{ApiError, LoginError}, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
-struct LocalItem {
+pub struct LocalItem {
     l_id: i32,
     l_name: String,
     l_phone_num: String,

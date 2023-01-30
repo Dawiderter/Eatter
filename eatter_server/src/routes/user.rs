@@ -8,7 +8,7 @@ use tracing::{trace, info};
 use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
-struct UserItem {
+pub struct UserItem {
     u_id: i32,
     u_nick: String,
     u_bio: Option<String>,

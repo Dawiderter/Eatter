@@ -1,6 +1,6 @@
 use axum::{
     body::Body,
-    extract::{Path, Query, State},
+    extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
@@ -20,7 +20,7 @@ use crate::{
 };
 
 #[derive(Serialize, Debug, FromRow)]
-struct MealItem {
+pub struct MealItem {
     m_id: i32,
     m_price: Decimal,
     m_name: String,
@@ -40,7 +40,6 @@ pub fn meal_router() -> Router<GlobalState, Body> {
         .route("/", post(add_meal))
         .route("/:id", get(get_meal))
         .route("/local/:id", get(get_meals_from_local))
-        .route("/tag", get(search_meals_by_tag))
 }
 
 async fn get_meal(
@@ -64,19 +63,6 @@ async fn get_meals_from_local(
     trace!("Meals from local: {:?}", id);
 
     let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE l_id = ?", id)
-        .fetch_all(&pool)
-        .await?;
-
-    Ok(Json(json!(res)))
-}
-
-async fn search_meals_by_tag(
-    State(pool): State<MySqlPool>,
-    Query(tag): Query<String>,
-) -> Result<impl IntoResponse, ApiError> {
-    trace!("Tag requested {:?}", tag);
-
-    let res = query_as!(MealItem, "SELECT m.* FROM meal_items m JOIN meals_tags mt ON m.m_id = mt.meal_id JOIN tags t ON t.id = mt.tag_id WHERE t.name LIKE ?", tag)
         .fetch_all(&pool)
         .await?;
 

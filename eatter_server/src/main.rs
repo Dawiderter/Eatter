@@ -5,7 +5,7 @@ use axum::{
     Router, http::{StatusCode, Request}, body::Body,
 };
 use clap::Parser;
-use eatter_server::{routes::{auth::auth_router, review::review_router, meal::meal_router, local::local_router, user::user_router, comment::comment_router}};
+use eatter_server::{routes::{auth::auth_router, review::review_router, meal::meal_router, local::local_router, user::user_router, comment::comment_router, search::search_router}};
 use eatter_server::state::GlobalState;
 
 use sqlx::{mysql::{MySqlPoolOptions, MySqlConnectOptions}, MySqlPool};
@@ -37,6 +37,7 @@ async fn main() {
         .nest("/meal", meal_router())
         .nest("/review", review_router())
         .nest("/user", user_router())
+        .nest("/search", search_router())
         .fallback(|request : Request<Body>| async move {
             trace!("Request denied: {:?}", request);
             StatusCode::NOT_FOUND

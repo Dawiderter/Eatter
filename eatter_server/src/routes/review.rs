@@ -9,7 +9,7 @@ use tracing::{trace, info};
 use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
-struct ReviewItem {
+pub struct ReviewItem {
     r_id: i32,
     r_body: String,
     r_created_at: NaiveDateTime,
