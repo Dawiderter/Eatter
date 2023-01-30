@@ -190,6 +190,19 @@ BEGIN
 END//
 DELIMITER ;
 
+DROP PROCEDURE addTagForMeal;
+DELIMITER //
+CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
+BEGIN
+	DECLARE tag_id INT;
+	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
+	INSERT INTO tags(name) VALUES (tag_name);
+	END IF;
+	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
+	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
+END//
+DELIMITER ;
+
 -- DROP PROCEDURE removeSessionFromId;
 -- DELIMITER //
 -- CREATE PROCEDURE removeSessionFromId(IN user_id int)
@@ -336,17 +349,7 @@ DELIMITER ;
 -- DELIMITER ;
 
 
--- DELIMITER //
--- CREATE PROCEDURE addTagForMeal(IN tag_name varchar(30), IN meal_id INT)
--- BEGIN
--- 	DECLARE tag_id INT;
--- 	IF NOT EXISTS (SELECT * FROM tags WHERE tags.name = tag_name) THEN
--- 	INSERT INTO tags(name) VALUES (name);
--- 	END IF;
--- 	SET tag_id = (SELECT tags.id FROM tags WHERE tags.name = tag_name);
--- 	INSERT INTO meals_tags(meal_id, tag_id) VALUES(meal_id, tag_id);
--- END//
--- DELIMITER ;
+
 
 
 -- DELIMITER //
