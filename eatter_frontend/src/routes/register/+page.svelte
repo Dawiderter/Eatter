@@ -1,5 +1,5 @@
-<script>
-
+<script lang="ts">
+	import { goto } from "$app/navigation";
 </script>
 <form method="post" action="?/register">
     <div>
@@ -15,7 +15,7 @@
         <input name="nick" type="text">
     </div>
     <div>
-        <button class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
+        <button on:click = {() => goto('/login')} class = "bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-full">
             Register
         </button>
     </div>
