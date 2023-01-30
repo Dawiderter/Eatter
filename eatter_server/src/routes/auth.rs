@@ -66,11 +66,6 @@ impl AuthedUser {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct TokenInput {
-    pub token: String
-}
-
-#[derive(Debug, Deserialize)]
 pub struct LoginBody {
     email: String,
     pass: String,

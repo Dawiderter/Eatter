@@ -1,14 +1,12 @@
-import { fetch_global_feed } from "$lib/post";
+import { api_get } from "$lib/api";
 import type { PageServerLoad } from "./$types";
 
-export const load = (async (event) => {
+export const load = (async ({fetch}) => {
     
-    const posts = await fetch_global_feed(event);
-
-    console.log(posts.items);
+    const reviews = await api_get(fetch, "/review/all");
 
     return {
-        items: posts
+        items: reviews
     }
 
 }) satisfies PageServerLoad;

@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{error::{GrabError, PostError}, state::GlobalState, routes::auth::AuthedUser};
+use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 struct UserItem {
@@ -37,13 +37,13 @@ pub fn user_router() -> Router<GlobalState, Body> {
 async fn get_user(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("User: {:?}", id);
 
     let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id = ?", id)
         .fetch_optional(&pool)
         .await?
-        .ok_or(GrabError::NoItem)?;
+        .ok_or(ApiError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
@@ -51,7 +51,7 @@ async fn get_user(
 async fn get_user_followers(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Followers for user: {:?}", id);
 
     let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id IN (SELECT follower FROM followers WHERE followed = ?)", id)
@@ -64,7 +64,7 @@ async fn get_user_followers(
 async fn get_user_followed(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Followed for user: {:?}", id);
 
     let res = query_as!(UserItem, "SELECT * FROM user_items WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?)", id)
@@ -78,7 +78,7 @@ async fn change_bio(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<BioInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Bio to change: {:?}", body);
 
     let user_id = AuthedUser::from_cookie(&pool, &cookies).await?.user_id;
@@ -100,7 +100,7 @@ async fn follow(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<FollowInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     info!("User to follow: {:?}", body);
 
     let user_id = AuthedUser::from_cookie(&pool, &cookies).await?.user_id;
@@ -122,7 +122,7 @@ async fn unfollow(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<FollowInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     info!("User to unfollow: {:?}", body);
 
     let user_id = AuthedUser::from_cookie(&pool, &cookies).await?.user_id;

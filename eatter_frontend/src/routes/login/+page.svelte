@@ -3,7 +3,7 @@
 
 
 </script>
-<form method="post" action="/login">
+<form method="post" action="?/login">
     <div>
         <label for="email">Email</label>
         <input name="email" type="email">

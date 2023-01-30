@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { post_comment } from "$lib/post";
 	import Comment from "$lib/ui_components/Comment.svelte";
     import Post from "$lib/ui_components/Post.svelte";
 	import ResizableInput from "$lib/ui_components/ResizableInput.svelte";
@@ -18,7 +17,7 @@
     </div>
     <div class="space-y-5">
         {#if data.auth}
-            <form class = "w-4/12 input-group z-0" action="/post{post.r_id}" method="post">
+            <form class = "w-4/12 input-group z-0" action="?/add" method="post">
                 <label for = "commentinput">Insert comment</label>
                 <ResizableInput
                     class = "w-8/12"

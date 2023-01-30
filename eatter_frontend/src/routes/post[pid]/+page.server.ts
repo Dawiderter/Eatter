@@ -1,10 +1,10 @@
-import { fetch_post, fetch_comments, post_comment } from "$lib/post";
+import { api_get, api_post } from "$lib/api";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load = (async (event) => {
+export const load = (async ({fetch, params}) => {
     
-    const post = await fetch_post(event, event.params.pid);
-    const comments = await fetch_comments(event, event.params.pid);
+    const post = await api_get(fetch, "/review/" + params.pid);
+    const comments = await api_get(fetch, "/comment/review/" + params.pid);
 
     return {
         post: post,
@@ -14,17 +14,17 @@ export const load = (async (event) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-    default: async (event) => {
-        const data = await event.request.formData();
+    add: async ({fetch, request, params}) => {
+        const data = await request.formData();
 
         const body = data.get('comment_body');
-        const review_id = event.params.pid; 
+        const review_id = params.pid; 
 
         console.log(body);
         console.log(review_id);
         
         if (review_id != null && body != null) {
-            await post_comment(event, parseInt(review_id), body.valueOf().toString());
+            await api_post(fetch, "/comment/", {review_id : parseInt(review_id), body: body.valueOf().toString()});
         }
     }   
 } satisfies Actions ;

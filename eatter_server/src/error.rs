@@ -6,37 +6,10 @@ pub enum LoginError {
     HashingError(argon2::password_hash::Error),
     AuthError,
 }
-
-pub enum GrabError {
-    DataBaseError(sqlx::Error),
-    NoItem,
-}
-
-pub enum PostError {
+pub enum ApiError {
     DataBaseError(sqlx::Error),
     LoginError(LoginError),
-}
-
-impl From<sqlx::Error> for GrabError {
-    fn from(inner: sqlx::Error) -> Self {
-        Self::DataBaseError(inner)
-    }
-}
-
-impl IntoResponse for GrabError {
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::DataBaseError(inner) => {
-                error!("Database error: {:?}", inner);
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-            Self::NoItem => {
-                info!("No item");
-                StatusCode::NOT_FOUND
-            }
-        }
-        .into_response()
-    }
+    NoItem,
 }
 
 impl From<sqlx::Error> for LoginError {
@@ -74,19 +47,19 @@ impl IntoResponse for LoginError {
     }
 }
 
-impl From<sqlx::Error> for PostError {
+impl From<sqlx::Error> for ApiError {
     fn from(inner: sqlx::Error) -> Self {
         Self::DataBaseError(inner)
     }
 }
 
-impl From<LoginError> for PostError {
+impl From<LoginError> for ApiError {
     fn from(inner: LoginError) -> Self {
         Self::LoginError(inner)
     }
 }
 
-impl IntoResponse for PostError {
+impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         match self {
             Self::DataBaseError(inner) => {
@@ -96,6 +69,10 @@ impl IntoResponse for PostError {
             Self::LoginError(inner) => {
                 error!("Post login error");
                 inner.into_response()
+            }
+            Self::NoItem => {
+                info!("No item");
+                StatusCode::NOT_FOUND.into_response()
             }
         }
     }

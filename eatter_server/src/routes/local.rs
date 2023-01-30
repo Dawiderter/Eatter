@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{state::GlobalState, error::{GrabError, PostError, LoginError}, routes::auth::AuthedUser};
+use crate::{state::GlobalState, error::{ApiError, LoginError}, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 struct LocalItem {
@@ -36,13 +36,13 @@ pub fn local_router() -> Router<GlobalState, Body> {
 async fn get_local(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Local: {:?}", id);
 
     let res = query_as!(LocalItem, "SELECT * FROM local_items WHERE l_id = ?", id)
         .fetch_optional(&pool)
         .await?
-        .ok_or(GrabError::NoItem)?;
+        .ok_or(ApiError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
@@ -51,7 +51,7 @@ async fn add_local(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<LocalInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Local to add: {:?}", body);
 
     let company_id = AuthedUser::from_cookie(&pool, &cookies)

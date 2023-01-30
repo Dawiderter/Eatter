@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{state::GlobalState, error::{GrabError, PostError}, routes::auth::AuthedUser};
+use crate::{state::GlobalState, error::{ApiError}, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 struct CommentItem {
@@ -32,7 +32,7 @@ pub fn comment_router() -> Router<GlobalState, Body> {
 async fn get_comments_for_review(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Comments for review: {:?}", id);
 
     let res = query_as!(
@@ -50,7 +50,7 @@ async fn add_comment(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<CommentInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Comment to add: {:?}", body);
 
     let user = AuthedUser::from_cookie(&pool, &cookies).await?;

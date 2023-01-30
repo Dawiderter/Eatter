@@ -14,7 +14,7 @@ use sqlx::{query, query_as, FromRow, MySqlPool};
 use tracing::{info, trace};
 
 use crate::{
-    error::{GrabError, LoginError, PostError},
+    error::{LoginError, ApiError},
     routes::auth::AuthedUser,
     state::GlobalState,
 };
@@ -46,13 +46,13 @@ pub fn meal_router() -> Router<GlobalState, Body> {
 async fn get_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Meals: {:?}", id);
 
     let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE m_id = ?", id)
         .fetch_optional(&pool)
         .await?
-        .ok_or(GrabError::NoItem)?;
+        .ok_or(ApiError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
@@ -60,7 +60,7 @@ async fn get_meal(
 async fn get_meals_from_local(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Meals from local: {:?}", id);
 
     let res = query_as!(MealItem, "SELECT * FROM meal_items WHERE l_id = ?", id)
@@ -73,7 +73,7 @@ async fn get_meals_from_local(
 async fn search_meals_by_tag(
     State(pool): State<MySqlPool>,
     Query(tag): Query<String>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Tag requested {:?}", tag);
 
     let res = query_as!(MealItem, "SELECT m.* FROM meal_items m JOIN meals_tags mt ON m.m_id = mt.meal_id JOIN tags t ON t.id = mt.tag_id WHERE t.name LIKE ?", tag)
@@ -87,7 +87,7 @@ async fn add_meal(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<MealInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Meal to add: {:?}", body);
 
     let company_id = AuthedUser::from_cookie(&pool, &cookies)

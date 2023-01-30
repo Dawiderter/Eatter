@@ -1,9 +1,9 @@
-import { fetch_local } from "$lib/post";
+import { api_get } from "$lib/api";
 import type { LayoutServerLoad } from "./$types";
 
-export const load = (async (event) => {
-    const local = await fetch_local(event, event.params.lid);
-  
+export const load = (async ({fetch, params}) => {
+    let local = await api_get(fetch, "/local/" + params.lid);
+    
     return {
       local: local,
     };

@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::{FromRow, MySqlPool, query_as, query};
 use tracing::{trace, info};
 
-use crate::{error::{GrabError, PostError}, state::GlobalState, routes::auth::AuthedUser};
+use crate::{error::ApiError, state::GlobalState, routes::auth::AuthedUser};
 
 #[derive(Serialize, Debug, FromRow)]
 struct ReviewItem {
@@ -34,13 +34,13 @@ pub fn review_router() -> Router<GlobalState, Body> {
         .route("/all", get(get_reviews))
         .route("/:id", get(get_review))
         .route("/meal/:id", get(get_reviews_for_meal))
-        .route("/followed/:id", get(get_reviews_of_followed))
+        .route("/followed", get(get_reviews_of_followed))
         .route("/user/:id", get(get_reviews_from_user))
 }
 
 async fn get_reviews(
     State(pool): State<MySqlPool>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("All reviews requested");
 
     let res = query_as!(ReviewItem, "SELECT * FROM feed ORDER BY r_created_at DESC")
@@ -53,24 +53,26 @@ async fn get_reviews(
 async fn get_review(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Review: {:?}", id);
 
     let res = query_as!(ReviewItem, "SELECT * FROM feed WHERE r_id = ?", id)
         .fetch_optional(&pool)
         .await?
-        .ok_or(GrabError::NoItem)?;
+        .ok_or(ApiError::NoItem)?;
 
     Ok(Json(json!(res)))
 }
 
 async fn get_reviews_of_followed(
     State(pool): State<MySqlPool>,
-    Path(id): Path<i32>
-) -> Result<impl IntoResponse, GrabError> {
-    trace!("Personal feed requested: {:?}", id);
+    cookies: CookieJar,
+) -> Result<impl IntoResponse, ApiError> {
+    trace!("Personal feed requested",);
 
-    let res = query_as!(ReviewItem, "SELECT * FROM feed WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?) ORDER BY r_created_at DESC", id)
+    let user = AuthedUser::from_cookie(&pool, &cookies).await?;
+
+    let res = query_as!(ReviewItem, "SELECT * FROM feed WHERE u_id IN (SELECT followed FROM followers WHERE follower = ?) ORDER BY r_created_at DESC", user.user_id)
         .fetch_all(&pool)
         .await?;
 
@@ -80,7 +82,7 @@ async fn get_reviews_of_followed(
 async fn get_reviews_for_meal(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Reviews for meal: {:?}", id);
 
     let res = query_as!(ReviewItem, "SELECT * FROM feed WHERE m_id = ? ORDER BY r_created_at DESC", id)
@@ -93,7 +95,7 @@ async fn get_reviews_for_meal(
 async fn get_reviews_from_user(
     State(pool): State<MySqlPool>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, GrabError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Reviews for user: {:?}", id);
 
     let res = query_as!(ReviewItem, "SELECT * FROM feed WHERE u_id = ? ORDER BY r_created_at DESC", id)
@@ -107,7 +109,7 @@ async fn add_review(
     State(pool): State<MySqlPool>,
     cookies: CookieJar,
     Json(body): Json<ReviewInput>,
-) -> Result<impl IntoResponse, PostError> {
+) -> Result<impl IntoResponse, ApiError> {
     trace!("Review to add: {:?}", body);
 
     let user = AuthedUser::from_cookie(&pool, &cookies).await?;

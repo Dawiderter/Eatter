@@ -10,7 +10,7 @@
 	<MealCard selected = {true} meal_item = {data.item} />
 	{#if data.auth}
 	<div>
-		<form class="input-group z-0" method="post">
+		<form class="input-group z-0" method="post" action="?/add">
 			Write a review:
 			<ResizableInput name="review_body" class = "pt-2 w-8/12" minRows={2} maxRows={5}/>
 			<input type="range" name="review_score" min="0" max="5">

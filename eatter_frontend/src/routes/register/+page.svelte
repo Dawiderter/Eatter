@@ -1,8 +1,7 @@
 <script>
-	import { invalidateAll } from "$app/navigation"
 
 </script>
-<form method="post">
+<form method="post" action="?/register">
     <div>
         <label for="email">Email</label>
         <input name="email" type="email">
