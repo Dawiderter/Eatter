@@ -65,6 +65,7 @@ CREATE TABLE reviews (
 	PRIMARY KEY (id),
 	FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE,
 	FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+	UNIQUE (meal_id, author_id),
 	CHECK(score>0 AND score<6)
 );
 
