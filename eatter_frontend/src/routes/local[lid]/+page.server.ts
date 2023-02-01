@@ -28,7 +28,7 @@ export const actions = {
         const local_id = data.get("meal_id");
     
         if (local_id != null) {
-          let tok = await api_del(fetch, "/meal/" + local_id);
+          let tok = await api_del(fetch, "/meal/" + local_id, {});
         }
       }  
   } satisfies Actions ;

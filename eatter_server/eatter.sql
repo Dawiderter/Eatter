@@ -164,8 +164,8 @@ GRANT SELECT, INSERT, DELETE ON eatter.reviews TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.companies TO 'server'@'localhost';
 GRANT SELECT, INSERT, UPDATE ON eatter.users_ext TO 'server'@'localhost';
 GRANT SELECT, INSERT, DELETE ON eatter.followers TO 'server'@'localhost';
-GRANT SELECT ON eatter.meals_tags TO 'server'@'localhost';
-GRANT SELECT ON eatter.tags TO 'server'@'localhost';
+GRANT SELECT, DELETE ON eatter.meals_tags TO 'server'@'localhost';
+GRANT SELECT, DELETE ON eatter.tags TO 'server'@'localhost';
 GRANT SELECT ON eatter.mods TO 'server'@'localhost';
 
 DROP TRIGGER r_ext_ins;

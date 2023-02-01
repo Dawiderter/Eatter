@@ -1,10 +1,15 @@
 <script lang="ts">
+	import ItemForm from "$lib/ui_components/ItemForm.svelte";
 	import MealCard from "$lib/ui_components/Meal.svelte";
 
     export let data : import("./$types").PageData;
 
 </script>
 
+{#if data.auth != null && data.auth.company_id != null && data.auth.company_id == data.local.c_id}
+        <ItemForm action="?/add" fields={[{name: "name", type: "text"}, {name: "price", type: "text"}]}></ItemForm>
+    {/if}
+	<h3 class = "pt-8 text-xl font-raleway">Menu:</h3>
 <div class = "">
 	
 	{#each data.items as item}
@@ -26,9 +31,9 @@
 
 <style>
     .close {
-  font-size: 25px;
-  font-weight: 200;
-  display: inline-block;
-  transform: rotate(45deg);
-}
+		font-size: 25px;
+		font-weight: 200;
+		display: inline-block;
+		transform: rotate(45deg);
+	}
 </style>

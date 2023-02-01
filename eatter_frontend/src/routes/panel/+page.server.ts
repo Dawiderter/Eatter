@@ -46,7 +46,7 @@ export const actions = {
         const local_id = data.get("local_id");
     
         if (local_id != null) {
-          let tok = await api_del(fetch, "/local/" + local_id);
+          let tok = await api_del(fetch, "/local/" + local_id, {});
         }
       }  
 

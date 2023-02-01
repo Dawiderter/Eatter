@@ -34,9 +34,11 @@ export const api_post = async (sfetch : typeof fetch, resource : string, data : 
     return resp.status == 200;
 }
 
-export const api_del = async (sfetch : typeof fetch, resource : string) => {
+export const api_del = async (sfetch : typeof fetch, resource : string, data : any) => {
     const resp = await sfetch("http://api" + resource,{
-        method: "DELETE"
+        headers: new Headers([['Content-Type', 'application/json']]),
+        method: "DELETE",
+        body: JSON.stringify(data),
     });
 
     return resp.status == 200;
